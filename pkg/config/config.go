@@ -29,11 +29,10 @@ type Destination struct {
 func FromFile(file string) (*Config, error) {
 	b, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Could not read config %s", file)
 	}
 
 	conf := &Config{}
 	err = yaml.Unmarshal(b, conf)
-
 	return conf, errors.Wrap(err, "Could not unmarshal config")
 }
