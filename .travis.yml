@@ -1,0 +1,14 @@
+language: go
+go:
+  - "1.12"
+os:
+  - linux
+env:
+  - GO111MODULE=on
+jobs:
+  include:
+    - stage: test
+      script:
+        - make test
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
