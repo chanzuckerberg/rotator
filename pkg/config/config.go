@@ -3,6 +3,8 @@ package config
 import (
 	"io/ioutil"
 
+	"github.com/chanzuckerberg/rotator/pkg/sink"
+	"github.com/chanzuckerberg/rotator/pkg/source"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
@@ -13,17 +15,9 @@ type Config struct {
 }
 
 type Secret struct {
-	Name         string        `yaml:"name"`
-	Source       Source        `yaml:"source"`
-	Destinations []Destination `yaml:"destinations"`
-}
-
-type Source struct {
-	Kind string `yaml:"kind"`
-}
-
-type Destination struct {
-	Kind string `yaml:"kind"`
+	Name   string        `yaml:"name"`
+	Source source.Source `yaml:"source"`
+	Sinks  []sink.Sink   `yaml:"sinks"`
 }
 
 func FromFile(file string) (*Config, error) {
