@@ -4,7 +4,7 @@ install:
 
 .PHONY: test
 test:
-	go test -coverprofile=coverage.txt -covermode=atomic ./... 
+	go test -v -coverprofile=coverage.txt -covermode=atomic ./... 
 
 .PHONY: lint
 lint: # run the fast go linters
