@@ -47,7 +47,7 @@ func TestRotate(t *testing.T) {
 		name   string
 		config *config.Config
 	}{
-		{"non-empty config, dummy source, stdout sink",
+		{"non-empty config, dummy source, buffer sink",
 			&config.Config{
 				Version: 0,
 				Secrets: []config.Secret{

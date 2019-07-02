@@ -11,7 +11,7 @@ func TestReadFromDummySource(t *testing.T) {
 	r := require.New(t)
 
 	src := source.DummySource{}
-	secret, err := src.Read()
+	creds, err := src.Read()
 	r.Nil(err)
-	r.Len(secret, 10)
+	r.Len(creds[source.Secret], 10)
 }

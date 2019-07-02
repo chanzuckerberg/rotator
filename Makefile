@@ -12,3 +12,8 @@ lint: # run the fast go linters
 		--disable-all --enable=deadcode  --enable=gocyclo --enable=golint --enable=varcheck \
 		--enable=structcheck --enable=errcheck --enable=dupl --enable=unparam --enable=goimports \
 		--enable=interfacer --enable=unconvert --enable=gosec --enable=megacheck
+
+.PHONY: deps
+deps:
+	go mod tidy
+	go mod vendor

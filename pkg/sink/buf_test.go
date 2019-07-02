@@ -12,7 +12,7 @@ func TestWriteToBufSink(t *testing.T) {
 
 	sink := sink.NewBufSink()
 	secret := "EXAMPLESECRET"
-	err := sink.Write(secret)
+	err := sink.Write(map[string]string{"secret": secret})
 	r.Nil(err)
 	written := sink.Read()
 	r.Equal(secret, written)

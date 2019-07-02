@@ -37,14 +37,17 @@ func RotateSecrets(config *config.Config) error {
 	for _, secret := range config.Secrets {
 		// Rotate credential at source
 		src := secret.Source
-		newSecret, err := src.Read()
+		newCreds, err := src.Read()
 		if err != nil {
 			return errors.Wrapf(err, "%s: unable to rotate secret at %s", secret.Name, src.Kind())
+		}
+		if newCreds == nil {
+			return nil
 		}
 
 		// Write new credential to each sink
 		for _, sink := range secret.Sinks {
-			err = sink.Write(newSecret)
+			err = sink.Write(newCreds)
 			if err != nil {
 				return errors.Wrapf(err, "%s: unable to write secret to %s", secret.Name, sink.Kind())
 			}

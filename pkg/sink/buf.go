@@ -21,10 +21,14 @@ func (sink *BufSink) Read() string {
 	return sink.buf.String()
 }
 
-// Write writes secret to sink.buf.
-func (sink *BufSink) Write(secret string) error {
-	_, err := fmt.Fprint(sink.buf, secret)
-	return errors.Wrap(err, "unable to write secret to buffer")
+func (sink *BufSink) Write(creds map[string]string) error {
+	for _, v := range creds {
+		_, err := fmt.Fprint(sink.buf, v)
+		if err != nil {
+			return errors.Wrap(err, "unable to write secret to buffer")
+		}
+	}
+	return nil
 }
 
 func (sink *BufSink) Kind() Kind {

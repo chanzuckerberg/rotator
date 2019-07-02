@@ -2,7 +2,12 @@ package config
 
 import (
 	"io/ioutil"
+	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	"github.com/aws/aws-sdk-go/aws/session"
+	cziAws "github.com/chanzuckerberg/go-misc/aws"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
 	"github.com/pkg/errors"
@@ -68,6 +73,29 @@ func (secret *Secret) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	switch source.Kind(srcKind) {
 	case source.KindDummy:
 		secret.Source = &source.DummySource{}
+	case source.KindAws:
+		// set up AWS session and IAM service client
+		sess, err := session.NewSession(&aws.Config{})
+		if err != nil {
+			return errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
+		}
+		roleArn, ok := srcMapStr["role_arn"]
+		if !ok {
+			return errors.New("missing role_arn in aws iam source config")
+		}
+		sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn) // the new Credentials object wraps the AssumeRoleProvider
+		awsClient := cziAws.New(sess).WithIAM(sess.Config)
+
+		// parse max age
+		maxAgeStr, ok := srcMapStr["max_age"]
+		if !ok {
+			return errors.New("missing max_age in aws iam source config")
+		}
+		maxAge, err := time.ParseDuration(maxAgeStr)
+		if err != nil {
+			return errors.Wrap(err, "incorrect max_age format in aws iam source config")
+		}
+		secret.Source = source.NewAwsIamSource().WithUserName(srcMapStr["username"]).WithAwsClient(awsClient).WithMaxAge(maxAge)
 	default:
 		return source.ErrUnknownKind
 	}
@@ -124,7 +152,19 @@ func (secret Secret) MarshalYAML() (interface{}, error) {
 	// marshall secret.Source
 	switch secret.Source.Kind() {
 	case source.KindDummy:
-		secretFields["source"] = map[string]string{"kind": "dummy"}
+		secretFields["source"] = map[string]string{"kind": string(source.KindDummy)}
+	case source.KindAws:
+		awsIamSrc := secret.Source.(*source.AwsIamSource)
+		clientBytes, err := yaml.Marshal(awsIamSrc.Client)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to marshal AWS client")
+		}
+		secretFields["source"] = map[string]string{"kind": string(source.KindAws),
+			"username": awsIamSrc.UserName,
+			"role_arn": awsIamSrc.RoleArn,
+			"client":   string(clientBytes),
+			"max_age":  awsIamSrc.MaxAge.String(),
+		}
 	default:
 		return nil, errors.New("Unrecognized source")
 	}

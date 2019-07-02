@@ -2,12 +2,13 @@ package sink
 
 // Sink is the interface for all credential sinks.
 //
-// Write writes secret to the underlying sink. It returns
-// any error encountered that caused the write to stop early.
+// Write writes each key value pair in creds to the underlying
+// sink. It returns any error encountered that caused the write
+// to stop early.
 //
 // Kind returns the kind of sink.
 type Sink interface {
-	Write(secret string) error
+	Write(creds map[string]string) error
 	Kind() Kind
 }
 

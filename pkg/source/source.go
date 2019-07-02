@@ -8,7 +8,7 @@ package source
 //
 // Kind returns the kind of sink.
 type Source interface {
-	Read() (string, error)
+	Read() (map[string]string, error)
 	Kind() Kind
 }
 
@@ -20,5 +20,6 @@ func (e Error) Error() string { return string(e) }
 
 const (
 	KindDummy      Kind  = "dummy"
+	KindAws        Kind  = "aws"
 	ErrUnknownKind Error = "unknown source"
 )
