@@ -20,6 +20,7 @@ func (e Error) Error() string { return string(e) }
 
 const (
 	KindBuf        Kind  = "buf"
+	KindTravisCi   Kind  = "travisCi"
 	ErrUnknownKind Error = "unknown sink"
 )
 
@@ -30,7 +31,14 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 	for _, s := range sinks {
 		switch s.Kind() {
 		case KindBuf:
-			yamlSinks = append(yamlSinks, map[string]string{"kind": "buf"})
+			yamlSinks = append(yamlSinks, map[string]string{"kind": string(KindBuf)})
+		case KindTravisCi:
+			sink := s.(*TravisCiSink)
+			yamlSinks = append(yamlSinks,
+				map[string]string{
+					"kind":      string(KindTravisCi),
+					"repo_slug": sink.RepoSlug,
+				})
 		default:
 			return nil, ErrUnknownKind
 		}

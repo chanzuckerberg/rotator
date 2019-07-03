@@ -1,0 +1,11 @@
+version: 0
+secrets:
+- name: test
+  sinks:
+  - kind: travisCi
+    repo_slug: chanzuckerberg/rotator
+  source:
+    kind: aws
+    max_age: 1h40m0s
+    role_arn: arn:aws:iam::exampleAccount:role/admin
+    username: rotator_test

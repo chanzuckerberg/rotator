@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// A StdoutSink represents a sink that prints to a buffer.
+// A BufSink represents a sink that prints to a buffer.
 type BufSink struct {
 	buf *bytes.Buffer
 }

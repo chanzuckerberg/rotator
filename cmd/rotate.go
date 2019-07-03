@@ -20,12 +20,12 @@ var rotateCmd = &cobra.Command{
 		// handle flags
 		file, err := cmd.Flags().GetString("file")
 		if err != nil {
-			return errors.Wrap(err, "couldn't parse config flag")
+			return errors.Wrap(err, "unable to parse config flag")
 		}
 
 		config, err := config.FromFile(file)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "unable to read config from file")
 		}
 		return RotateSecrets(config)
 	},

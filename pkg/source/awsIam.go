@@ -37,6 +37,11 @@ func (src *AwsIamSource) WithUserName(userName string) *AwsIamSource {
 	return src
 }
 
+func (src *AwsIamSource) WithRoleArn(roleArn string) *AwsIamSource {
+	src.RoleArn = roleArn
+	return src
+}
+
 func (src *AwsIamSource) WithAwsClient(client *cziAws.Client) *AwsIamSource {
 	src.Client = client
 	return src

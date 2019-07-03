@@ -1,0 +1,7 @@
+version: 0
+secrets:
+- name: test
+  sinks:
+  - kind: buf
+  source:
+    kind: dummy
