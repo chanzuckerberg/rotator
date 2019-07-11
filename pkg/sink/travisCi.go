@@ -43,12 +43,6 @@ func (sink *TravisCiSink) Write(creds map[string]string) error {
 				} else if resp.StatusCode != http.StatusOK {
 					return errors.New(fmt.Sprintf("unable to update env var %s in repo %s: invalid http status: %s", k, sink.RepoSlug, resp.Status))
 				}
-				// TODO: remove the following
-				// The author checks the env var returned by UpdateByRepoSlug or CreateByRepoSlug
-				// but based on the implementation, this is redundant after checking the error and response code
-				// else if *ev.Name != body.Name || *ev.Value != body.Value || *ev.Public != body.Public {
-				// 	return errors.New(fmt.Sprintf("unable to update env var %s in repo %s: invalid EnvVar returned: %v", k, sink.RepoSlug, ev))
-				// }
 				exists = true
 			}
 		}
