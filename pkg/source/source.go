@@ -23,6 +23,7 @@ func (e Error) Error() string { return string(e) }
 const (
 	KindDummy      Kind  = "dummy"
 	KindAws        Kind  = "aws"
+	KindGitHub     Kind  = "github"
 	ErrUnknownKind Error = "unknown source"
 
 	// Default values
