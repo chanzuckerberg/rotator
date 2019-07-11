@@ -10,13 +10,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Keys for the map returned by Read()
 const (
-	// Keys for the map returned by Read()
 	AwsAccessKeyID     string = "accessKeyId"
 	AwsSecretAccessKey string = "secretAccessKey"
-
-	// Default values
-	DefaultMaxAge time.Duration = 100 * time.Minute
 )
 
 type AwsIamSource struct {
@@ -78,17 +75,17 @@ func (src *AwsIamSource) RotateKeys(ctx context.Context) (*iam.AccessKey, error)
 			olderKey = keys.AccessKeyMetadata[1]
 		}
 
-		// delete older access key if expired, else nothing to do
-		if time.Since(*olderKey.CreateDate) > src.MaxAge {
-			_, err = svc.DeleteAccessKeyWithContext(ctx, &iam.DeleteAccessKeyInput{
-				AccessKeyId: aws.String(*olderKey.AccessKeyId),
-				UserName:    aws.String(src.UserName),
-			})
-			if err != nil {
-				return nil, errors.Wrap(err, "unable to delete older access key")
-			}
-		} else {
+		// nothing to do if key within max age
+		if time.Since(*olderKey.CreateDate) <= src.MaxAge {
 			return nil, nil
+		}
+		// else delete key
+		_, err = svc.DeleteAccessKeyWithContext(ctx, &iam.DeleteAccessKeyInput{
+			AccessKeyId: aws.String(*olderKey.AccessKeyId),
+			UserName:    aws.String(src.UserName),
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to delete older access key")
 		}
 	}
 

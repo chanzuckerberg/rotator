@@ -1,5 +1,7 @@
 package source
 
+import "time"
+
 // Source is the interface for all credential sources.
 //
 // Read reads the secret from the underlying source.
@@ -22,4 +24,7 @@ const (
 	KindDummy      Kind  = "dummy"
 	KindAws        Kind  = "aws"
 	ErrUnknownKind Error = "unknown source"
+
+	// Default values
+	DefaultMaxAge time.Duration = 100 * time.Minute
 )

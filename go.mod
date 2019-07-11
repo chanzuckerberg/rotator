@@ -5,7 +5,8 @@ go 1.12
 require (
 	github.com/aws/aws-sdk-go v1.20.6
 	github.com/chanzuckerberg/go-misc v0.0.0-20190627174125-3b6fee7d50a6
-	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/davecgh/go-spew v1.1.1
+	github.com/google/go-github/v26 v26.1.3
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pkg/errors v0.8.0
 	github.com/shuheiktgw/go-travis v0.2.2
