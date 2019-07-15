@@ -135,7 +135,28 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to authenticate travis API")
 			}
+
 			sinks = append(sinks, &sink.TravisCiSink{RepoSlug: repoSlug, Client: client})
+		case sink.KindAwsParam:
+			// create an AWS SSM client from a session
+			roleArn, ok := sinkMapStr["role_arn"]
+			if !ok {
+				return nil, errors.New("missing role_arn in aws iam source config")
+			}
+			region, ok := sinkMapStr["region"]
+			if !ok {
+				return nil, errors.New("missing region in aws iam source config")
+			}
+			sess, err := session.NewSession(&aws.Config{
+				Region: aws.String(region), // SSM functions require region configuration
+			})
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
+			}
+			sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn)
+			client := cziAws.New(sess).WithIAM(sess.Config)
+
+			sinks = append(sinks, &sink.AwsParamSink{Client: client})
 		default:
 			return nil, sink.ErrUnknownKind
 		}

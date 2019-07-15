@@ -2,7 +2,7 @@ version: 0
 secrets:
 - name: test
   sinks:
-  - kind: travisCi
+  - kind: TravisCI
     repo_slug: chanzuckerberg/rotator
   source:
     kind: aws

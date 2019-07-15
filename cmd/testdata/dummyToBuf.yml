@@ -2,6 +2,6 @@ version: 0
 secrets:
 - name: test
   sinks:
-  - kind: buf
+  - kind: Buffer
   source:
     kind: dummy

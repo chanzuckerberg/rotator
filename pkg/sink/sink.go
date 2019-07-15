@@ -3,7 +3,9 @@ package sink
 // Sink is the interface for all credential sinks.
 //
 // Write writes each key value pair in creds to the underlying
-// sink. It returns any error encountered that caused the write
+// sink. Unless otherwise specified, Write overwrites existing
+// values and does not create new credentials in the sink.
+// It returns any error encountered that caused the write
 // to stop early.
 //
 // Kind returns the kind of sink.
@@ -19,9 +21,10 @@ type Error string
 func (e Error) Error() string { return string(e) }
 
 const (
-	KindBuf        Kind  = "buf"
-	KindTravisCi   Kind  = "travisCi"
-	ErrUnknownKind Error = "unknown sink"
+	KindBuf        Kind  = "Buffer"
+	KindTravisCi   Kind  = "TravisCI"
+	KindAwsParam   Kind  = "AWSParameterStore"
+	ErrUnknownKind Error = "UnknownSink"
 )
 
 type Sinks []Sink
@@ -38,6 +41,14 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 				map[string]string{
 					"kind":      string(KindTravisCi),
 					"repo_slug": sink.RepoSlug,
+				})
+		case KindAwsParam:
+			sink := s.(*AwsParamSink)
+			yamlSinks = append(yamlSinks,
+				map[string]string{
+					"kind":     string(KindAwsParam),
+					"role_arn": sink.RoleArn,
+					"region":   sink.Region,
 				})
 		default:
 			return nil, ErrUnknownKind

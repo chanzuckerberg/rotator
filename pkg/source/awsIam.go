@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Keys for the map returned by Read()
 const (
+	// Keys for the map returned by Read()
 	AwsAccessKeyID     string = "accessKeyId"
 	AwsSecretAccessKey string = "secretAccessKey"
 )
