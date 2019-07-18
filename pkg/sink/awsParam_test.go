@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -23,7 +24,7 @@ import (
 
 var (
 	region      = "us-west-2"
-	roleArn     = "arn:aws:iam::exampleAccount:role/poweruser"
+	roleArn     = os.Getenv("ROLE_ARN")
 	parName     = "name"
 	parValue    = "value"
 	fakeParName = "non-existing parameter"
@@ -35,9 +36,10 @@ type TestSuite struct {
 	ctx context.Context
 
 	// aws
-	awsClient *cziAws.Client
-	mockSSM   *cziAws.MockSSMSvc
-	sink      *sink.AwsParamSink
+	awsClient          *cziAws.Client
+	mockSSM            *cziAws.MockSSMSvc
+	mockSecretsManager *cziAws.MockSecretsManagerSvc
+	sink               sink.Sink
 
 	// cleanup
 	server *httptest.Server
@@ -55,13 +57,11 @@ func (ts *TestSuite) SetupTest() {
 
 	ts.awsClient = cziAws.New(sess)
 	ts.awsClient, ts.mockSSM = ts.awsClient.WithMockSSM()
-	ts.sink = &sink.AwsParamSink{
-		Client: ts.awsClient,
-	}
+	ts.awsClient, ts.mockSecretsManager = ts.awsClient.WithMockSecretsManager()
 
 	// mock PutParameterWithContext
-	putOut := &ssm.PutParameterOutput{}
-	ts.mockSSM.On("PutParameterWithContext", mock.Anything).Return(putOut, nil)
+	out := &ssm.PutParameterOutput{}
+	ts.mockSSM.On("PutParameterWithContext", mock.Anything).Return(out, nil)
 }
 
 func (ts *TestSuite) TestWriteToAwsParamSinkFakeParam() {
@@ -71,17 +71,21 @@ func (ts *TestSuite) TestWriteToAwsParamSinkFakeParam() {
 	// mock GetParameterWithContext for non-existing parameter
 	in := &ssm.GetParameterInput{}
 	in.SetName(fakeParName)
-	ts.mockSSM.On("GetParameterWithContext", in).Return(&ssm.GetParameterOutput{}, awserr.New(ssm.ErrCodeParameterNotFound, "", nil))
+	out := &ssm.GetParameterOutput{}
+	errNotFound := awserr.New(ssm.ErrCodeParameterNotFound, "", nil)
+	ts.mockSSM.On("GetParameterWithContext", in).Return(out, errNotFound)
 
 	// test presence of log message
+	// TODO: fix logger testing
 	logger, hook := test.NewNullLogger()
 	errMsg := fmt.Sprintf("%s: parameter not found, skipping rotation", fakeParName)
 	logger.Error(errMsg)
 
+	ts.sink = &sink.AwsParamSink{Client: ts.awsClient}
 	err := ts.sink.Write(map[string]string{
 		fakeParName: parValue,
 	})
-	r.Nil(err)
+	r.NotNil(err)
 	r.Equal(1, len(hook.Entries))
 	r.Equal(logrus.ErrorLevel, hook.LastEntry().Level)
 	r.Equal(errMsg, hook.LastEntry().Message)
@@ -96,10 +100,11 @@ func (ts *TestSuite) TestWriteToAwsParamSink() {
 	in.SetName(parName)
 	par := &ssm.Parameter{}
 	par.SetName(parName).SetValue(parValue)
-	getOut := &ssm.GetParameterOutput{}
-	getOut.SetParameter(par)
-	ts.mockSSM.On("GetParameterWithContext", in).Return(getOut, nil)
+	out := &ssm.GetParameterOutput{}
+	out.SetParameter(par)
+	ts.mockSSM.On("GetParameterWithContext", in).Return(out, nil)
 
+	ts.sink = &sink.AwsParamSink{Client: ts.awsClient}
 	err := ts.sink.Write(map[string]string{
 		parName: parValue,
 	})

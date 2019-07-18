@@ -21,10 +21,11 @@ type Error string
 func (e Error) Error() string { return string(e) }
 
 const (
-	KindBuf        Kind  = "Buffer"
-	KindTravisCi   Kind  = "TravisCI"
-	KindAwsParam   Kind  = "AWSParameterStore"
-	ErrUnknownKind Error = "UnknownSink"
+	KindBuf               Kind  = "Buffer"
+	KindTravisCi          Kind  = "TravisCI"
+	KindAwsParamStore     Kind  = "AWSParameterStore"
+	KindAwsSecretsManager Kind  = "AWSSecretsManager"
+	ErrUnknownKind        Error = "UnknownSink"
 )
 
 type Sinks []Sink
@@ -42,11 +43,19 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 					"kind":      string(KindTravisCi),
 					"repo_slug": sink.RepoSlug,
 				})
-		case KindAwsParam:
+		case KindAwsParamStore:
 			sink := s.(*AwsParamSink)
 			yamlSinks = append(yamlSinks,
 				map[string]string{
-					"kind":     string(KindAwsParam),
+					"kind":     string(KindAwsParamStore),
+					"role_arn": sink.RoleArn,
+					"region":   sink.Region,
+				})
+		case KindAwsSecretsManager:
+			sink := s.(*AwsSecretsManagerSink)
+			yamlSinks = append(yamlSinks,
+				map[string]string{
+					"kind":     string(KindAwsSecretsManager),
 					"role_arn": sink.RoleArn,
 					"region":   sink.Region,
 				})

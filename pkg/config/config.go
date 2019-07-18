@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -11,6 +12,7 @@ import (
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
+	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
 	"github.com/sirupsen/logrus"
@@ -72,24 +74,20 @@ func unmarshalSource(srcIface interface{}) (source.Source, error) {
 	case source.KindDummy:
 		src = &source.DummySource{}
 	case source.KindAws:
+		if err = validate(srcMapStr, "role_arn", "max_age"); err != nil {
+			return nil, errors.Wrap(err, "missing keys in aws iam source config")
+		}
+
 		// set up AWS session and IAM service client
 		sess, err := session.NewSession(&aws.Config{})
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 		}
-		roleArn, ok := srcMapStr["role_arn"]
-		if !ok {
-			return nil, errors.New("missing role_arn in aws iam source config")
-		}
-		sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn) // the new Credentials object wraps the AssumeRoleProvider
+		sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"]) // the new Credentials object wraps the AssumeRoleProvider
 		client := cziAws.New(sess).WithIAM(sess.Config)
 
 		// parse max age
-		maxAgeStr, ok := srcMapStr["max_age"]
-		if !ok {
-			return nil, errors.New("missing max_age in aws iam source config")
-		}
-		maxAge, err := time.ParseDuration(maxAgeStr)
+		maxAge, err := time.ParseDuration(srcMapStr["max_age"])
 		if err != nil {
 			return nil, errors.Wrap(err, "incorrect max_age format in aws iam source config")
 		}
@@ -123,9 +121,8 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 		case sink.KindBuf:
 			sinks = append(sinks, sink.NewBufSink())
 		case sink.KindTravisCi:
-			repoSlug, ok := sinkMapStr["repo_slug"]
-			if !ok {
-				return nil, errors.New("missing repo_slug in travis ci sink config")
+			if err = validate(sinkMapStr, "repo_slug"); err != nil {
+				return nil, errors.Wrap(err, "missing keys in travis CI sink config")
 			}
 
 			// set up Travis CI API client
@@ -136,32 +133,55 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 				return nil, errors.Wrap(err, "unable to authenticate travis API")
 			}
 
-			sinks = append(sinks, &sink.TravisCiSink{RepoSlug: repoSlug, Client: client})
-		case sink.KindAwsParam:
+			sinks = append(sinks, &sink.TravisCiSink{RepoSlug: sinkMapStr["repo_slug"], Client: client})
+		case sink.KindAwsParamStore:
+			if err = validate(sinkMapStr, "role_arn", "region"); err != nil {
+				return nil, errors.Wrap(err, "missing keys in aws parameter store sink config")
+			}
+
 			// create an AWS SSM client from a session
-			roleArn, ok := sinkMapStr["role_arn"]
-			if !ok {
-				return nil, errors.New("missing role_arn in aws iam source config")
-			}
-			region, ok := sinkMapStr["region"]
-			if !ok {
-				return nil, errors.New("missing region in aws iam source config")
-			}
 			sess, err := session.NewSession(&aws.Config{
-				Region: aws.String(region), // SSM functions require region configuration
+				Region: aws.String(sinkMapStr["region"]), // SSM functions require region configuration
 			})
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 			}
-			sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn)
+			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"])
 			client := cziAws.New(sess).WithIAM(sess.Config)
 
 			sinks = append(sinks, &sink.AwsParamSink{Client: client})
+		case sink.KindAwsSecretsManager:
+			if err = validate(sinkMapStr, "role_arn", "region"); err != nil {
+				return nil, errors.Wrap(err, "missing keys in aws secrets manager sink config")
+			}
+
+			// create an AWS Secrets Manager client from a session
+			sess, err := session.NewSession(&aws.Config{
+				Region: aws.String(sinkMapStr["region"]), // Secrets Manager functions require region configuration
+			})
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
+			}
+			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"])
+			client := cziAws.New(sess).WithSecretsManager(sess.Config)
+
+			sinks = append(sinks, &sink.AwsSecretsManagerSink{Client: client})
 		default:
 			return nil, sink.ErrUnknownKind
 		}
 	}
 	return sinks, nil
+}
+
+// validate returns an error if any key is not present in m
+func validate(m map[string]string, keys ...string) error {
+	var errs *multierror.Error
+	for _, k := range keys {
+		if _, ok := m[k]; !ok {
+			errs = multierror.Append(errs, errors.New(fmt.Sprintf("missing %s", k)))
+		}
+	}
+	return errs.ErrorOrNil()
 }
 
 func (secret *Secret) UnmarshalYAML(unmarshal func(interface{}) error) error {
