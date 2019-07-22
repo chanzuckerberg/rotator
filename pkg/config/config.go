@@ -30,36 +30,52 @@ type Secret struct {
 	Sinks  sink.Sinks    `yaml:"sinks"`
 }
 
-// makeMapStrStr converts an interface to the type map[string]string.
+// parseIface converts an interface to the type map[string]string.
+// It also returns a second map[string]string if a "key_to_name" entry
+// exists, or nil otherwise.
 // It returns any error encountered as a result of iface not being of
 // the correct type.
-func makeMapStrStr(iface interface{}) (map[string]string, error) {
+func parseIface(iface interface{}) (mapStr map[string]string, keyToName map[string]string, err error) {
 	// first convert to map[interface{}]interface{}
 	mapIface, ok := iface.(map[interface{}]interface{})
 	if !ok {
-		return nil, errors.New("interface is not a map")
+		return nil, nil, errors.New("interface is not a map")
 	}
+
 	// then convert to map[string]string
-	mapStr := make(map[string]string)
+	mapStr = make(map[string]string)
 	for k, v := range mapIface {
 		strK, ok := k.(string)
 		if !ok {
-			return nil, errors.New("key is not a string")
+			return nil, nil, errors.New("key is not a string")
 		}
-		strV, ok := v.(string)
-		if !ok {
-			return nil, errors.New("value is not a string")
+		switch strK {
+		case "key_to_name":
+			var m map[string]string
+			var err error
+			keyToName, m, err = parseIface(v)
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "incorrect key_to_name format")
+			}
+			if m != nil {
+				return nil, nil, errors.New("incorrect key_to_name format")
+			}
+		default:
+			strV, ok := v.(string)
+			if !ok {
+				return nil, nil, errors.New("value is not a string")
+			}
+			mapStr[strK] = strV
 		}
-		mapStr[strK] = strV
 	}
-	return mapStr, nil
+	return mapStr, keyToName, nil
 }
 
 // unmarshalSource converts an interface to a type that implements
 // the source.Source interface.
 func unmarshalSource(srcIface interface{}) (source.Source, error) {
 	// convert srcIface to the type map[string]string
-	srcMapStr, err := makeMapStrStr(srcIface)
+	srcMapStr, _, err := parseIface(srcIface)
 	if err != nil {
 		return nil, errors.Wrap(err, "incorrect source format in secret config")
 	}
@@ -106,20 +122,23 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 	}
 	var sinks sink.Sinks
 	for _, i := range is {
-		// convert each interface to the type map[string]string
-		sinkMapStr, err := makeMapStrStr(i)
+		// convert each interface to the type map[string]string and retrieve keyToName mapping
+		sinkMapStr, keyToName, err := parseIface(i)
 		if err != nil {
 			return nil, errors.Wrap(err, "incorrect sink format in secret config")
+		}
+		if keyToName == nil {
+			return nil, errors.New("missing key_to_name in sink config")
 		}
 
 		// determine sink kind
 		sinkKind, ok := sinkMapStr["kind"]
 		if !ok {
-			return nil, errors.New("missing kind in source config")
+			return nil, errors.New("missing kind in sink config")
 		}
 		switch sink.Kind(sinkKind) {
 		case sink.KindBuf:
-			sinks = append(sinks, sink.NewBufSink())
+			sinks = append(sinks, sink.NewBufSink().WithKeyToName(keyToName))
 		case sink.KindTravisCi:
 			if err = validate(sinkMapStr, "repo_slug"); err != nil {
 				return nil, errors.Wrap(err, "missing keys in travis CI sink config")
@@ -133,7 +152,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 				return nil, errors.Wrap(err, "unable to authenticate travis API")
 			}
 
-			sinks = append(sinks, &sink.TravisCiSink{RepoSlug: sinkMapStr["repo_slug"], Client: client})
+			sinks = append(sinks, &sink.TravisCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, RepoSlug: sinkMapStr["repo_slug"], Client: client})
 		case sink.KindAwsParamStore:
 			if err = validate(sinkMapStr, "role_arn", "region"); err != nil {
 				return nil, errors.Wrap(err, "missing keys in aws parameter store sink config")
@@ -149,7 +168,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"])
 			client := cziAws.New(sess).WithIAM(sess.Config)
 
-			sinks = append(sinks, &sink.AwsParamSink{Client: client})
+			sinks = append(sinks, &sink.AwsParamSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, Client: client})
 		case sink.KindAwsSecretsManager:
 			if err = validate(sinkMapStr, "role_arn", "region"); err != nil {
 				return nil, errors.Wrap(err, "missing keys in aws secrets manager sink config")
@@ -165,7 +184,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"])
 			client := cziAws.New(sess).WithSecretsManager(sess.Config)
 
-			sinks = append(sinks, &sink.AwsSecretsManagerSink{Client: client})
+			sinks = append(sinks, &sink.AwsSecretsManagerSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, Client: client})
 		default:
 			return nil, sink.ErrUnknownKind
 		}

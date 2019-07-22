@@ -1,16 +1,22 @@
 package sink
 
+import "context"
+
 // Sink is the interface for all credential sinks.
 //
-// Write writes each key value pair in creds to the underlying
-// sink. Unless otherwise specified, Write overwrites existing
+// Write updates the value of the credential with the given name
+// in the underlying sink.
+// Unless otherwise specified, Write overwrites existing
 // values and does not create new credentials in the sink.
 // It returns any error encountered that caused the write
 // to stop early.
 //
+// GetKeyToName returns the KeyToName field's value.
+//
 // Kind returns the kind of sink.
 type Sink interface {
-	Write(creds map[string]string) error
+	Write(ctx context.Context, name string, val string) error
+	GetKeyToName() map[string]string
 	Kind() Kind
 }
 
@@ -31,22 +37,28 @@ const (
 type Sinks []Sink
 
 func (sinks Sinks) MarshalYAML() (interface{}, error) {
-	var yamlSinks []map[string]string
+	var yamlSinks []map[string]interface{}
 	for _, s := range sinks {
 		switch s.Kind() {
 		case KindBuf:
-			yamlSinks = append(yamlSinks, map[string]string{"kind": string(KindBuf)})
+			sink := s.(*BufSink)
+			yamlSinks = append(yamlSinks,
+				map[string]interface{}{
+					"key_to_name": sink.KeyToName,
+					"kind":        string(KindBuf),
+				})
 		case KindTravisCi:
 			sink := s.(*TravisCiSink)
 			yamlSinks = append(yamlSinks,
-				map[string]string{
-					"kind":      string(KindTravisCi),
-					"repo_slug": sink.RepoSlug,
+				map[string]interface{}{
+					"key_to_name": sink.KeyToName,
+					"kind":        string(KindTravisCi),
+					"repo_slug":   sink.RepoSlug,
 				})
 		case KindAwsParamStore:
 			sink := s.(*AwsParamSink)
 			yamlSinks = append(yamlSinks,
-				map[string]string{
+				map[string]interface{}{
 					"kind":     string(KindAwsParamStore),
 					"role_arn": sink.RoleArn,
 					"region":   sink.Region,
@@ -54,7 +66,7 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 		case KindAwsSecretsManager:
 			sink := s.(*AwsSecretsManagerSink)
 			yamlSinks = append(yamlSinks,
-				map[string]string{
+				map[string]interface{}{
 					"kind":     string(KindAwsSecretsManager),
 					"role_arn": sink.RoleArn,
 					"region":   sink.Region,

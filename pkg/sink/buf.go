@@ -2,6 +2,7 @@ package sink
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -9,6 +10,8 @@ import (
 
 // A BufSink represents a sink that prints to a buffer.
 type BufSink struct {
+	BaseSink `yaml:",inline"`
+
 	buf *bytes.Buffer
 }
 
@@ -17,16 +20,19 @@ func NewBufSink() *BufSink {
 	return &BufSink{buf: b}
 }
 
+func (sink *BufSink) WithKeyToName(m map[string]string) *BufSink {
+	sink.BaseSink = BaseSink{KeyToName: m}
+	return sink
+}
+
 func (sink *BufSink) Read() string {
 	return sink.buf.String()
 }
 
-func (sink *BufSink) Write(creds map[string]string) error {
-	for _, v := range creds {
-		_, err := fmt.Fprint(sink.buf, v)
-		if err != nil {
-			return errors.Wrap(err, "unable to write secret to buffer")
-		}
+func (sink *BufSink) Write(ctx context.Context, name string, val string) error {
+	_, err := fmt.Fprint(sink.buf, val)
+	if err != nil {
+		return errors.Wrap(err, "unable to write secret to buffer")
 	}
 	return nil
 }

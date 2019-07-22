@@ -1,7 +1,11 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/chanzuckerberg/rotator/pkg/config"
+	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +38,10 @@ var rotateCmd = &cobra.Command{
 // RotateSecrets takes a config, reads the secret from the source,
 // and writes it to each sink.
 func RotateSecrets(config *config.Config) error {
+	ctx := context.Background()
 	for _, secret := range config.Secrets {
+		var errs *multierror.Error
+
 		// Rotate credential at source
 		src := secret.Source
 		newCreds, err := src.Read()
@@ -45,11 +52,24 @@ func RotateSecrets(config *config.Config) error {
 			return nil
 		}
 
-		// Write new credential to each sink
+		// Write new credentials to each sink
 		for _, sink := range secret.Sinks {
-			err = sink.Write(newCreds)
-			if err != nil {
-				return errors.Wrapf(err, "%s: unable to write secret to %s", secret.Name, sink.Kind())
+			keyToName := sink.GetKeyToName()
+			if keyToName == nil {
+				errs = multierror.Append(errs, errors.New(fmt.Sprintf("%s: missing value in KeyToName field for %s sink", secret.Name, sink.Kind())))
+				continue
+			}
+			for k, v := range newCreds {
+				name, ok := keyToName[k]
+				if !ok {
+					errs = multierror.Append(errs, errors.New(fmt.Sprintf("%s: no name specified for credential with key %s for %s sink", secret.Name, k, sink.Kind())))
+					continue
+				}
+				err = sink.Write(ctx, name, v)
+				if err != nil {
+					errs = multierror.Append(errors.Wrapf(err, "%s: unable to write secret to %s sink", secret.Name, sink.Kind()))
+					continue
+				}
 			}
 		}
 	}

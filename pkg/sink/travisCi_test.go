@@ -1,6 +1,7 @@
 package sink_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -13,7 +14,7 @@ import (
 var (
 	baseURL     = travis.ApiComUrl
 	travisToken = os.Getenv("TRAVIS_API_AUTH_TOKEN")
-	repoSlug    = "chanzuckerberg/shared-infra"
+	repoSlug    = "chanzuckerberg/rotator"
 )
 
 func TestWriteToTravisCiSink_Integration(t *testing.T) {
@@ -26,20 +27,25 @@ func TestWriteToTravisCiSink_Integration(t *testing.T) {
 	// travisToken, resp, err := client.Authentication.UsingGithubToken(ctx, gitHubToken)
 	r.Nil(err)
 
+	name := "TEST"
 	sink := sink.TravisCiSink{
 		RepoSlug: repoSlug,
 		Client:   client,
 	}
+	ctx := context.Background()
 
-	// create a key
+	// create key
+	body := travis.EnvVarBody{Name: name, Value: "", Public: false}
+	e, _, err := sink.Client.EnvVars.CreateByRepoSlug(ctx, repoSlug, &body)
+	r.Nil(err)
+
+	// rotate key
 	creds, err := (&source.DummySource{}).Read()
 	r.Nil(err)
-	err = sink.Write(creds)
+	err = sink.Write(ctx, name, creds[source.Secret])
 	r.Nil(err)
 
-	// update the key
-	creds, err = (&source.DummySource{}).Read()
-	r.Nil(err)
-	err = sink.Write(creds)
+	// delete key
+	_, err = sink.Client.EnvVars.DeleteByRepoSlug(ctx, repoSlug, *e.Id)
 	r.Nil(err)
 }

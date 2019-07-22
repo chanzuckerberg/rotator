@@ -2,7 +2,6 @@ package sink_test
 
 import (
 	"context"
-	"fmt"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -15,8 +14,6 @@ import (
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
-	"github.com/sirupsen/logrus"
-	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -25,7 +22,7 @@ import (
 var (
 	region      = "us-west-2"
 	roleArn     = os.Getenv("ROLE_ARN")
-	parName     = "name"
+	parName     = "test-parameter"
 	parValue    = "value"
 	fakeParName = "non-existing parameter"
 )
@@ -75,20 +72,10 @@ func (ts *TestSuite) TestWriteToAwsParamSinkFakeParam() {
 	errNotFound := awserr.New(ssm.ErrCodeParameterNotFound, "", nil)
 	ts.mockSSM.On("GetParameterWithContext", in).Return(out, errNotFound)
 
-	// test presence of log message
-	// TODO: fix logger testing
-	logger, hook := test.NewNullLogger()
-	errMsg := fmt.Sprintf("%s: parameter not found, skipping rotation", fakeParName)
-	logger.Error(errMsg)
-
+	// write secret to sink
 	ts.sink = &sink.AwsParamSink{Client: ts.awsClient}
-	err := ts.sink.Write(map[string]string{
-		fakeParName: parValue,
-	})
+	err := ts.sink.Write(ts.ctx, fakeParName, parValue)
 	r.NotNil(err)
-	r.Equal(1, len(hook.Entries))
-	r.Equal(logrus.ErrorLevel, hook.LastEntry().Level)
-	r.Equal(errMsg, hook.LastEntry().Message)
 }
 
 func (ts *TestSuite) TestWriteToAwsParamSink() {
@@ -104,10 +91,9 @@ func (ts *TestSuite) TestWriteToAwsParamSink() {
 	out.SetParameter(par)
 	ts.mockSSM.On("GetParameterWithContext", in).Return(out, nil)
 
+	// write secret to sink
 	ts.sink = &sink.AwsParamSink{Client: ts.awsClient}
-	err := ts.sink.Write(map[string]string{
-		parName: parValue,
-	})
+	err := ts.sink.Write(ts.ctx, parName, parValue)
 	r.Nil(err)
 }
 
@@ -128,26 +114,26 @@ func TestWriteToAwsParamSink_Integration(t *testing.T) {
 
 	sink := sink.AwsParamSink{Client: client}
 	svc := client.SSM.Svc
+	ctx := context.Background()
 
 	// get the secret
-	name := source.Secret
 	in := &ssm.GetParameterInput{
-		Name: &name,
+		Name:           &parName,
+		WithDecryption: aws.Bool(true),
 	}
-	in = in.SetWithDecryption(true)
-	old, err := svc.GetParameterWithContext(context.Background(), in)
+	old, err := svc.GetParameterWithContext(ctx, in)
 	r.Nil(err)
 
 	// rotate the secret
 	creds, err := (&source.DummySource{}).Read()
 	r.Nil(err)
-	err = sink.Write(creds)
+	err = sink.Write(ctx, parName, creds[source.Secret])
 	r.Nil(err)
-	new, err := svc.GetParameterWithContext(context.Background(), in)
+	new, err := svc.GetParameterWithContext(ctx, in)
 	r.Nil(err)
 
 	// check new parameter value and other attributes
-	r.Equal(creds[name], *new.Parameter.Value)
+	r.Equal(creds[source.Secret], *new.Parameter.Value)
 	r.NotEqual(*old.Parameter.Version, *new.Parameter.Version)
 	r.Equal(*old.Parameter.Type, *new.Parameter.Type)
 	r.Equal(*old.Parameter.ARN, *new.Parameter.ARN)

@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	secretName     = "secret"
+	secretName     = "test-secret"
 	secretVal      = "value"
 	fakeSecretName = "non-existing secret"
 )
@@ -37,9 +37,7 @@ func (ts *TestSuite) TestWriteToAwsSecretsManagerSink() {
 
 	// write secret to sink
 	ts.sink = &sink.AwsSecretsManagerSink{Client: ts.awsClient}
-	err := ts.sink.Write(map[string]string{
-		secretName: secretVal,
-	})
+	err := ts.sink.Write(ts.ctx, secretName, secretVal)
 	r.Nil(err)
 }
 
@@ -58,9 +56,7 @@ func (ts *TestSuite) TestWriteToAwsSecretsManagerSinkFakeSecret() {
 
 	// write non-existing secret to sink
 	ts.sink = &sink.AwsSecretsManagerSink{Client: ts.awsClient}
-	err := ts.sink.Write(map[string]string{
-		fakeSecretName: secretVal,
-	})
+	err := ts.sink.Write(ts.ctx, fakeSecretName, secretVal)
 	r.NotNil(err)
 }
 
@@ -77,18 +73,25 @@ func TestWriteToAwsSecretsManagerSink_Integration(t *testing.T) {
 
 	sink := sink.AwsSecretsManagerSink{Client: client}
 	svc := client.SecretsManager.Svc
+	ctx := context.Background()
+
+	// get the secret
+	in := &secretsmanager.GetSecretValueInput{
+		SecretId: &secretName,
+	}
+	old, err := svc.GetSecretValueWithContext(ctx, in)
+	r.Nil(err)
 
 	// rotate the secret
 	creds, err := (&source.DummySource{}).Read()
 	r.Nil(err)
-	err = sink.Write(creds)
+	err = sink.Write(ctx, secretName, creds[source.Secret])
+	r.Nil(err)
+	new, err := svc.GetSecretValueWithContext(ctx, in)
 	r.Nil(err)
 
-	// check secret value
-	in := &secretsmanager.GetSecretValueInput{
-		SecretId: &secretName,
-	}
-	out, err := svc.GetSecretValueWithContext(context.Background(), in)
-	r.Nil(err)
-	r.Equal(*out.SecretString, creds[secretName])
+	// check new secret value and other attributes
+	r.Equal(creds[source.Secret], *new.SecretString)
+	r.NotEqual(*old.VersionId, *new.VersionId)
+	r.Equal(*old.ARN, *new.ARN)
 }
