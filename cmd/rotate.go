@@ -71,11 +71,12 @@ func getPrompt() bool {
 	b := color.New(color.Bold).SprintFunc()
 	logrus.Println(b("Do you want to perform these actions?"))
 	logrus.Println("  rotator will perform the actions described above.")
-	logrus.Println("  Only 'yes' will be accepted to approve.")
+	logrus.Println("  Yes', 'yes', 'y', 'Y' will be accepted to approve.")
+	logrus.Println("  No', 'no', 'n', 'N' will cancel the rotation.")
 	logrus.Println()
 
 	// get user input
-	yes := prompt.Confirm(b("  Enter a value: "))
+	yes := prompt.Confirm(b("  Enter a value"))
 	logrus.Println()
 	if !yes {
 		redB := color.New(color.FgRed, color.Bold).SprintFunc()
