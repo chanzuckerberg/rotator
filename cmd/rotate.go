@@ -79,8 +79,6 @@ func getPrompt() bool {
 
 	// get user input
 	ans := prompt.String(b("  Enter a value: "))
-	// reader := bufio.NewReader(os.Stdin)
-	// ans, _ := reader.ReadString('\n')
 	logrus.Println()
 	if ans != "yes" {
 		redB := color.New(color.FgRed, color.Bold).SprintFunc()
