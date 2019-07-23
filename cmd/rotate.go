@@ -1,15 +1,15 @@
 package cmd
 
 import (
-	"bufio"
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/chanzuckerberg/rotator/pkg/config"
 	"github.com/fatih/color"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
+	"github.com/segmentio/go-prompt"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +24,7 @@ var rotateCmd = &cobra.Command{
 	Short: "Rotate secrets",
 	Long: `rotate parses a config file, rotates the secret at 
 			the source, and writes the new secret to each sink`,
+	SilenceErrors: true, // If we don't silence here, cobra will print them. But we want to do that in cmd/root.go
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// parse config and print plan
 		file, err := cmd.Flags().GetString("file")
@@ -49,45 +50,45 @@ var rotateCmd = &cobra.Command{
 		}
 
 		// rotate secrets
-		fmt.Println("Performing the actions described above.")
+		logrus.Println("Performing the actions described above.")
 		return RotateSecrets(config)
 	},
 }
 
 func printPlan(config *config.Config) {
 	for _, secret := range config.Secrets {
-		fmt.Println("Rotating secret", secret.Name)
+		logrus.Println("Rotating secret", secret.Name)
 
 		src := secret.Source
-		fmt.Println("*", "reading new credentials from", src.Kind(), "source")
+		logrus.Println("*", "reading new credentials from", src.Kind(), "source")
 
 		for _, sink := range secret.Sinks {
-			fmt.Println("*", "writing new credentials to", sink.Kind(), "sink")
+			logrus.Println("*", "writing new credentials to", sink.Kind(), "sink")
 		}
-		fmt.Println()
+		logrus.Println()
 	}
 }
 
 func getPrompt() bool {
 	// print prompt
-	b := color.New(color.Bold)
-	b.Print("Do you want to perform these actions?\n")
-	fmt.Println("  rotator will perform the actions described above.")
-	fmt.Println("  Only 'yes' will be accepted to approve.")
-	fmt.Println()
+	b := color.New(color.Bold).SprintFunc()
+	logrus.Println(b("Do you want to perform these actions?"))
+	logrus.Println("  rotator will perform the actions described above.")
+	logrus.Println("  Only 'yes' will be accepted to approve.")
+	logrus.Println()
 
 	// get user input
-	b.Print("  Enter a value: ")
-	reader := bufio.NewReader(os.Stdin)
-	ans, _ := reader.ReadString('\n')
-	fmt.Println()
-	if ans != "yes\n" {
-		fmt.Println()
-		color.New(color.FgRed, color.Bold).Print("Error: ")
-		b.Print("Rotation cancelled.\n")
-		fmt.Println()
+	ans := prompt.String(b("  Enter a value: "))
+	// reader := bufio.NewReader(os.Stdin)
+	// ans, _ := reader.ReadString('\n')
+	logrus.Println()
+	if ans != "yes" {
+		redB := color.New(color.FgRed, color.Bold).SprintFunc()
+		logrus.Errorln()
+		logrus.Errorln(redB("Error: "), "Rotation cancelled.")
+		logrus.Errorln()
 	}
-	return ans == "yes\n"
+	return ans == "yes"
 }
 
 // RotateSecrets takes a config, reads the secret from the source,
