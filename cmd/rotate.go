@@ -42,11 +42,8 @@ var rotateCmd = &cobra.Command{
 		if err != nil {
 			return errors.Wrap(err, "unable to parse yes flag")
 		}
-		if !skip {
-			yes := getPrompt()
-			if !yes {
-				return nil
-			}
+		if !(skip || getPrompt()) {
+			return nil
 		}
 
 		// rotate secrets
@@ -78,15 +75,15 @@ func getPrompt() bool {
 	logrus.Println()
 
 	// get user input
-	ans := prompt.String(b("  Enter a value: "))
+	yes := prompt.Confirm(b("  Enter a value: "))
 	logrus.Println()
-	if ans != "yes" {
+	if !yes {
 		redB := color.New(color.FgRed, color.Bold).SprintFunc()
 		logrus.Errorln()
 		logrus.Errorln(redB("Error: "), "Rotation cancelled.")
 		logrus.Errorln()
 	}
-	return ans == "yes"
+	return yes
 }
 
 // RotateSecrets takes a config, reads the secret from the source,
