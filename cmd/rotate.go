@@ -38,11 +38,11 @@ var rotateCmd = &cobra.Command{
 		printPlan(config)
 
 		// prompt user to continue if necessary
-		skip, err := cmd.Flags().GetBool("yes")
+		skipPrompt, err := cmd.Flags().GetBool("yes")
 		if err != nil {
 			return errors.Wrap(err, "unable to parse yes flag")
 		}
-		if !(skip || getPrompt()) {
+		if !(skipPrompt || getPrompt()) {
 			return nil
 		}
 
