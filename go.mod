@@ -5,10 +5,11 @@ go 1.12
 require (
 	github.com/aws/aws-sdk-go v1.20.6
 	github.com/chanzuckerberg/go-misc v0.0.0-20190716060611-91021143eac9
-	github.com/davecgh/go-spew v1.1.1
+	github.com/fatih/color v1.7.0
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/pkg/errors v0.8.0
 	github.com/shuheiktgw/go-travis v0.2.2
 	github.com/sirupsen/logrus v1.4.2
