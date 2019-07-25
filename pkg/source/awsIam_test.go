@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-var (
+const (
 	userName = "test-user"
 )
 

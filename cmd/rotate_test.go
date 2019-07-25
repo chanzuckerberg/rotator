@@ -18,8 +18,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	roleArn  = os.Getenv("ROLE_ARN")
+const (
 	userName = "rotator_test"
 	repoSlug = "chanzuckerberg/rotator"
 )
@@ -27,6 +26,7 @@ var (
 func TestRotate(t *testing.T) {
 	// set up AWS session and IAM service client
 	sess, _ := session.NewSession(&aws.Config{})
+	roleArn := os.Getenv("ROLE_ARN")
 	sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn) // the new Credentials object wraps the AssumeRoleProvider
 	awsClient := cziAws.New(sess).WithIAM(sess.Config)
 
