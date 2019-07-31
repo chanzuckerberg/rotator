@@ -19,7 +19,10 @@ RUN wget -q https://github.com//segmentio/chamber/releases/download/${CHAMBER_VE
 RUN chmod +x /bin/chamber
 
 # Final stage: the running container
-FROM scratch AS final
+FROM alpine:latest AS final
+
+# Install SSL root certificates
+RUN apk update && apk --no-cache add ca-certificates
 
 WORKDIR /app
 COPY --from=builder /app/rotator .
