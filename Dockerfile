@@ -24,8 +24,7 @@ FROM alpine:latest AS final
 # Install SSL root certificates
 RUN apk update && apk --no-cache add ca-certificates
 
-WORKDIR /app
-COPY --from=builder /app/rotator .
+COPY --from=builder /app/rotator /bin/rotator
 COPY --from=builder /bin/chamber /bin/chamber
 
-CMD ["./rotator"]
+CMD ["rotator"]
