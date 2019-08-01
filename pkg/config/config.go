@@ -99,7 +99,14 @@ func unmarshalSource(srcIface interface{}) (source.Source, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 		}
-		sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"]) // the new Credentials object wraps the AssumeRoleProvider
+		// create a Credentials object that wraps the AssumeRoleProvider, passing along the external ID if set
+		if externalID, ok := srcMapStr["external_id"]; ok && externalID != "" {
+			sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
+				p.ExternalID = &externalID
+			})
+		} else {
+			sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"])
+		}
 		client := cziAws.New(sess).WithIAM(sess.Config)
 
 		// parse max age
@@ -257,9 +264,10 @@ func (secret Secret) MarshalYAML() (interface{}, error) {
 	case source.KindAws:
 		awsIamSrc := secret.Source.(*source.AwsIamSource)
 		secretFields["source"] = map[string]string{"kind": string(source.KindAws),
-			"username": awsIamSrc.UserName,
-			"role_arn": awsIamSrc.RoleArn,
-			"max_age":  awsIamSrc.MaxAge.String(),
+			"username":    awsIamSrc.UserName,
+			"role_arn":    awsIamSrc.RoleArn,
+			"external_id": awsIamSrc.ExternalID,
+			"max_age":     awsIamSrc.MaxAge.String(),
 		}
 	default:
 		return nil, errors.New("Unrecognized source")

@@ -17,10 +17,11 @@ const (
 )
 
 type AwsIamSource struct {
-	UserName string         `yaml:"username"`
-	RoleArn  string         `yaml:"role_arn"`
-	Client   *cziAws.Client `yaml:"client"`
-	MaxAge   time.Duration  `yaml:"max_age"`
+	UserName   string         `yaml:"username"`
+	RoleArn    string         `yaml:"role_arn"`
+	ExternalID string         `yaml:"external_id"`
+	Client     *cziAws.Client `yaml:"client"`
+	MaxAge     time.Duration  `yaml:"max_age"`
 }
 
 func NewAwsIamSource() *AwsIamSource {
