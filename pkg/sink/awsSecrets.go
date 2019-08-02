@@ -11,9 +11,10 @@ import (
 type AwsSecretsManagerSink struct {
 	BaseSink `yaml:",inline"`
 
-	RoleArn string         `yaml:"role_arn"`
-	Region  string         `yaml:"region"`
-	Client  *cziAws.Client `yaml:"client"`
+	RoleArn    string         `yaml:"role_arn"`
+	ExternalID string         `yaml:"external_id"`
+	Region     string         `yaml:"region"`
+	Client     *cziAws.Client `yaml:"client"`
 }
 
 func (sink *AwsSecretsManagerSink) Write(ctx context.Context, name string, val string) error {

@@ -8,6 +8,7 @@ secrets:
     kind: TravisCI
     repo_slug: chanzuckerberg/rotator
   source:
+    external_id: ""
     kind: aws
     max_age: 1h40m0s
     role_arn: arn:aws:iam::exampleAccount:role/admin
