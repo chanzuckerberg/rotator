@@ -100,13 +100,11 @@ func unmarshalSource(srcIface interface{}) (source.Source, error) {
 			return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 		}
 		// create a Credentials object that wraps the AssumeRoleProvider, passing along the external ID if set
-		if externalID, ok := srcMapStr["external_id"]; ok && externalID != "" {
-			sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
+		sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
+			if externalID, ok := srcMapStr["external_id"]; ok && externalID != "" {
 				p.ExternalID = &externalID
-			})
-		} else {
-			sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"])
-		}
+			}
+		})
 		client := cziAws.New(sess).WithIAM(sess.Config)
 
 		// parse max age
