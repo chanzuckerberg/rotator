@@ -1,7 +1,7 @@
 # github.com/airbrake/gobrake v3.7.4+incompatible
 github.com/airbrake/gobrake
 github.com/airbrake/gobrake/internal/lrucache
-# github.com/aws/aws-sdk-go v1.20.6
+# github.com/aws/aws-sdk-go v1.21.9
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/credentials/stscreds
 github.com/aws/aws-sdk-go/aws/session
@@ -15,6 +15,7 @@ github.com/aws/aws-sdk-go/internal/sdkio
 github.com/aws/aws-sdk-go/aws/client
 github.com/aws/aws-sdk-go/internal/sdkrand
 github.com/aws/aws-sdk-go/service/sts
+github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/aws/aws-sdk-go/aws/corehandlers
 github.com/aws/aws-sdk-go/aws/credentials/processcreds
 github.com/aws/aws-sdk-go/aws/csm
@@ -37,7 +38,6 @@ github.com/aws/aws-sdk-go/service/s3/s3manager
 github.com/aws/aws-sdk-go/service/s3/s3manager/s3manageriface
 github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface
 github.com/aws/aws-sdk-go/service/ssm/ssmiface
-github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/aws/aws-sdk-go/service/support
 github.com/aws/aws-sdk-go/service/support/supportiface
 github.com/aws/aws-sdk-go/aws/awsutil
@@ -68,7 +68,7 @@ github.com/chanzuckerberg/go-misc/aws
 github.com/davecgh/go-spew/spew
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/google/go-querystring v1.0.0
+# github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
 github.com/google/go-querystring/query
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
@@ -86,13 +86,13 @@ github.com/konsorten/go-windows-terminal-sequences
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.8
 github.com/mattn/go-isatty
-# github.com/pkg/errors v0.8.0
+# github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/segmentio/go-prompt v1.2.1-0.20161017233205-f0d19b6901ad
+# github.com/segmentio/go-prompt v1.2.0
 github.com/segmentio/go-prompt
-# github.com/shuheiktgw/go-travis v0.2.2
+# github.com/shuheiktgw/go-travis v0.2.3
 github.com/shuheiktgw/go-travis
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
@@ -102,7 +102,7 @@ github.com/spf13/cobra
 github.com/spf13/pflag
 # github.com/stretchr/objx v0.1.1
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.2.2
+# github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/require
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/suite
