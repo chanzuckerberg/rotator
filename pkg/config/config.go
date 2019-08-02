@@ -170,7 +170,11 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 			}
-			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"])
+			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
+				if externalID, ok := sinkMapStr["external_id"]; ok && externalID != "" {
+					p.ExternalID = &externalID
+				}
+			})
 			client := cziAws.New(sess).WithIAM(sess.Config)
 
 			sinks = append(sinks, &sink.AwsParamSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, Client: client})
@@ -186,7 +190,11 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 			}
-			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"])
+			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
+				if externalID, ok := sinkMapStr["external_id"]; ok && externalID != "" {
+					p.ExternalID = &externalID
+				}
+			})
 			client := cziAws.New(sess).WithSecretsManager(sess.Config)
 
 			sinks = append(sinks, &sink.AwsSecretsManagerSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, Client: client})

@@ -59,17 +59,19 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 			sink := s.(*AwsParamSink)
 			yamlSinks = append(yamlSinks,
 				map[string]interface{}{
-					"kind":     string(KindAwsParamStore),
-					"role_arn": sink.RoleArn,
-					"region":   sink.Region,
+					"kind":        string(KindAwsParamStore),
+					"role_arn":    sink.RoleArn,
+					"external_id": sink.ExternalID,
+					"region":      sink.Region,
 				})
 		case KindAwsSecretsManager:
 			sink := s.(*AwsSecretsManagerSink)
 			yamlSinks = append(yamlSinks,
 				map[string]interface{}{
-					"kind":     string(KindAwsSecretsManager),
-					"role_arn": sink.RoleArn,
-					"region":   sink.Region,
+					"kind":        string(KindAwsSecretsManager),
+					"role_arn":    sink.RoleArn,
+					"external_id": sink.ExternalID,
+					"region":      sink.Region,
 				})
 		default:
 			return nil, ErrUnknownKind

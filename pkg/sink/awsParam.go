@@ -12,9 +12,10 @@ import (
 type AwsParamSink struct {
 	BaseSink `yaml:",inline"`
 
-	RoleArn string         `yaml:"role_arn"`
-	Region  string         `yaml:"region"`
-	Client  *cziAws.Client `yaml:"client"`
+	RoleArn    string         `yaml:"role_arn"`
+	ExternalID string         `yaml:"external_id"`
+	Region     string         `yaml:"region"`
+	Client     *cziAws.Client `yaml:"client"`
 }
 
 // Write updates the value of the the parameter with the given name in the
