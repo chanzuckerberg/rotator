@@ -10,17 +10,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Keys for the map returned by Read()
 const (
+	// Keys for the map returned by Read()
 	AwsAccessKeyID     string = "accessKeyId"
 	AwsSecretAccessKey string = "secretAccessKey"
 )
 
 type AwsIamSource struct {
-	UserName string         `yaml:"username"`
-	RoleArn  string         `yaml:"role_arn"`
-	Client   *cziAws.Client `yaml:"client"`
-	MaxAge   time.Duration  `yaml:"max_age"`
+	UserName   string         `yaml:"username"`
+	RoleArn    string         `yaml:"role_arn"`
+	ExternalID string         `yaml:"external_id"`
+	Client     *cziAws.Client `yaml:"client"`
+	MaxAge     time.Duration  `yaml:"max_age"`
 }
 
 func NewAwsIamSource() *AwsIamSource {

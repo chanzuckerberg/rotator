@@ -1,6 +1,11 @@
 package source
 
-import "math/rand"
+import (
+	"crypto/rand"
+	"encoding/base64"
+
+	"github.com/pkg/errors"
+)
 
 // A DummySource represents a source that generates random data.
 type DummySource struct{}
@@ -10,15 +15,15 @@ const (
 	Secret string = "secret"
 )
 
-// Read returns a random alphanumeric string of length 10.
+// Read returns a random number of length 16.
 func (src *DummySource) Read() (map[string]string, error) {
-	// reference: https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
-	const bytesSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	// reference: https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/
 	b := make([]byte, 10)
-	for i := range b {
-		b[i] = bytesSet[rand.Intn(len(bytesSet))]
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to generate random bytes")
 	}
-	return map[string]string{Secret: string(b)}, nil
+	return map[string]string{Secret: base64.URLEncoding.EncodeToString(b)}, nil
 }
 
 func (src *DummySource) Kind() Kind {

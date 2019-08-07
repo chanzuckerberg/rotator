@@ -18,8 +18,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	roleArn  = "arn:aws:iam::exampleAccount:role/admin"
+const (
 	userName = "rotator_test"
 	repoSlug = "chanzuckerberg/rotator"
 )
@@ -27,6 +26,7 @@ var (
 func TestRotate(t *testing.T) {
 	// set up AWS session and IAM service client
 	sess, _ := session.NewSession(&aws.Config{})
+	roleArn := os.Getenv("ROLE_ARN")
 	sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn) // the new Credentials object wraps the AssumeRoleProvider
 	awsClient := cziAws.New(sess).WithIAM(sess.Config)
 
@@ -49,7 +49,7 @@ func TestRotate(t *testing.T) {
 						Name:   "test",
 						Source: &source.DummySource{},
 						Sinks: sink.Sinks{
-							sink.NewBufSink(),
+							sink.NewBufSink().WithKeyToName(map[string]string{source.Secret: source.Secret}),
 						},
 					},
 				},
@@ -64,7 +64,15 @@ func TestRotate(t *testing.T) {
 						Name:   "test",
 						Source: source.NewAwsIamSource().WithUserName(userName).WithRoleArn(roleArn).WithAwsClient(awsClient),
 						Sinks: sink.Sinks{
-							&sink.TravisCiSink{RepoSlug: repoSlug, Client: travisClient},
+							&sink.TravisCiSink{
+								BaseSink: sink.BaseSink{
+									KeyToName: map[string]string{
+										source.AwsAccessKeyID:     "TEST_AWS_ACCESS_KEY_ID",
+										source.AwsSecretAccessKey: "TEST_AWS_SECRET_ACCESS_KEY",
+									},
+								},
+								RepoSlug: repoSlug,
+								Client:   travisClient},
 						},
 					},
 				},

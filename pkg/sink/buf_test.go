@@ -1,6 +1,7 @@
 package sink_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/chanzuckerberg/rotator/pkg/sink"
@@ -12,7 +13,7 @@ func TestWriteToBufSink(t *testing.T) {
 
 	sink := sink.NewBufSink()
 	secret := "EXAMPLESECRET"
-	err := sink.Write(map[string]string{"secret": secret})
+	err := sink.Write(context.Background(), "secret", secret)
 	r.Nil(err)
 	written := sink.Read()
 	r.Equal(secret, written)

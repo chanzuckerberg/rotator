@@ -14,6 +14,10 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+const (
+	userName = "test-user"
+)
+
 type TestSuite struct {
 	suite.Suite
 
@@ -40,7 +44,7 @@ func (ts *TestSuite) SetupTest() {
 
 	ts.awsClient = cziAws.New(sess)
 	ts.awsClient, ts.mockIAM = ts.awsClient.WithMockIAM()
-	ts.src = source.NewAwsIamSource().WithUserName("rotator_test").WithAwsClient(ts.awsClient)
+	ts.src = source.NewAwsIamSource().WithUserName(userName).WithAwsClient(ts.awsClient)
 
 	// mock aws request functionalities
 	key := &iam.AccessKey{}

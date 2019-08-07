@@ -13,5 +13,5 @@ func TestReadFromDummySource(t *testing.T) {
 	src := source.DummySource{}
 	creds, err := src.Read()
 	r.Nil(err)
-	r.Len(creds[source.Secret], 10)
+	r.Len(creds[source.Secret], 16)
 }
