@@ -52,13 +52,14 @@ secrets:
 `--yes/-y`    assume "yes" to all prompts and run non-interactively
 
 ## Sources
-All sources must have the following fields in addition to the source-specific fields.
+All sources must have the following fields in addition to any source-specific fields:
+
 | Name | Description |
 |------|-------------|
-| kind | The kind of source. Acceptable values: `aws` |
+| kind | The kind of source. Acceptable values: `aws`. |
 | max\_age | The max age for a credential before it will be rotated by rotator. The duration string should follow the same format as for [`time.ParseDuration()`](https://golang.org/pkg/time/#ParseDuration) e.g. "2h45m". |
 
-### AWS IAM (`kind` = `aws`)
+### AWS IAM (`aws`)
 | Name | Description | Required |
 |------|-------------|:-----:|
 | role\_arn | The ARN of the AWS IAM role that rotator should assume. | yes |
@@ -68,4 +69,11 @@ All sources must have the following fields in addition to the source-specific fi
 If the `external_id` field is not set, [AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
 
 ## Sinks
+All sinks must have the following fields in addition to any sink-specific fields:
+
+| Name | Description |
+|------|-------------|
+| kind | The kind of sink. Acceptable values: `TravisCI`, `AWSParameterStore`, `AWSSecretsManager`. |
+| key\_to\_name |  |
+
 ### Travis CI
