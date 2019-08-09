@@ -82,7 +82,7 @@ All sources must have the following fields in addition to any source-specific fi
 | username | The name of the AWS IAM user for rotator to rotate their AWS access keys. | yes |
 | external\_id | If set, the [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) is passed to the AWS STS AssumeRole API to assume the IAM Role specified by `role_arn` e.g. if deploying rotator on Kubernetes. | no |
 
-If the `external_id` field is not set, [AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
+AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
 
 ## Sinks
 All sinks must have the following fields in addition to any sink-specific fields:
@@ -108,7 +108,7 @@ All sinks must have the following fields in addition to any sink-specific fields
 | region | The [AWS Regional endpoint[(https://docs.aws.amazon.com/general/latest/gr/rande.html) | yes |
 | external\_id | If set, the [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) is passed to the AWS STS AssumeRole API to assume the IAM Role specified by `role_arn` e.g. if deploying rotator on Kubernetes. | no |
 
-If the `external_id` field is not set, [AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
+[AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
 
 ### AWS Secrets Manager  (`AWSSecretsManager`)
 | Name | Description | Required |
@@ -117,7 +117,7 @@ If the `external_id` field is not set, [AWS credentials must be specified](https
 | region | The [AWS Regional endpoint[(https://docs.aws.amazon.com/general/latest/gr/rande.html) | yes |
 | external\_id | If set, the [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) is passed to the AWS STS AssumeRole API to assume the IAM Role specified by `role_arn` e.g. if deploying rotator on Kubernetes. | no |
 
-If the `external_id` field is not set, [AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
+[AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
 
 ## Contributing
 
