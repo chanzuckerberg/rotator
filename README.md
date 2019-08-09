@@ -1,6 +1,6 @@
 # Rotator
 
-Rotator is a tool for rotating credentials on a regular schedule. It works by reading a YAML configuration file with a list of secret. Each secret consists of a source from which rotator will read new credentials, and one or more sinks to write the new credentials to.
+Rotator is a tool for rotating credentials on a regular schedule. It works by reading a YAML configuration file with a list of secret. Each secret consists of a source from which rotator will read new credentials, and one or more destinations (from here on referred to as sinks) to write the new credentials to.
 
 Currently, rotator supports the following sources...
 * AWS IAM 
@@ -48,8 +48,11 @@ secrets:
 ```
 
 ## Flags
-`--file/-f`  config file to read from \
-`--yes/-y`    assume "yes" to all prompts and run non-interactively
+`-f`, `--file`   config file to read from \
+`-y`, `--yes`    assume "yes" to all prompts and run non-interactively
+
+## Monitoring
+Configure [Airbrake](https://airbrake.io/) for rotator by setting the `ENV`, `AIRBRAKE_PROJECT_ID`, and `AIRBRAKE_PROJECT_KEY` environment variables.
 
 ## Sources
 All sources must have the following fields in addition to any source-specific fields:
@@ -74,6 +77,31 @@ All sinks must have the following fields in addition to any sink-specific fields
 | Name | Description |
 |------|-------------|
 | kind | The kind of sink. Acceptable values: `TravisCI`, `AWSParameterStore`, `AWSSecretsManager`. |
-| key\_to\_name |  |
+| key\_to\_name | A map of source keys to their sink names.* |
 
-### Travis CI
+> *Rotator parses the credentials from any source as key-value pairs. For example, the credentials for an AWS IAM source will consist of a `AWS_ACCESS_KEY_ID` key and a `AWS_SECRET_ACCESS_KEY` key and their associated values. The `key_to_name` mapping then maps each key to the name of the credential in the sink that rotator should update the value of. This gives users more control over the rotation, and is also necessary as we might have multiple credentials from the source kind written to the same sink instance. For example, the same AWS Parameter Store sink might store AWS credentials from multiple AWS IAM users; the `key_to_name` mapping allows us to specify the names of the parameters rotator should update the value of for each source so that we don't overwrite the parameters for another source.
+
+### Travis CI (`TravisCI`)
+| Name | Description | Required |
+|------|-------------|:-----:|
+| repo\_slug | The target [Travis CI repository slug](https://developer.travis-ci.com/resource/env_var). Same as {repository.owner.name}/{repository.name}. | yes |
+
+[`TRAVIS_API_AUTH_TOKEN`](https://github.com/shuheiktgw/go-travis#authentication-with-travis-api-token) should be set.
+
+### AWS Systems Manager Parameter Store (`AWSParameterStore`)
+| Name | Description | Required |
+|------|-------------|:-----:|
+| role\_arn | The ARN of the AWS IAM role that rotator should assume. | yes |
+| region | The [AWS Regional endpoint[(https://docs.aws.amazon.com/general/latest/gr/rande.html) | yes |
+| external\_id | If set, the [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) is passed to the AWS STS AssumeRole API to assume the IAM Role specified by `role_arn` e.g. if deploying rotator on Kubernetes. | no |
+
+If the `external_id` field is not set, [AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
+
+### AWS Secrets Manager  (`AWSSecretsManager`)
+| Name | Description | Required |
+|------|-------------|:-----:|
+| role\_arn | The ARN of the AWS IAM role that rotator should assume. | yes |
+| region | The [AWS Regional endpoint[(https://docs.aws.amazon.com/general/latest/gr/rande.html) | yes |
+| external\_id | If set, the [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) is passed to the AWS STS AssumeRole API to assume the IAM Role specified by `role_arn` e.g. if deploying rotator on Kubernetes. | no |
+
+If the `external_id` field is not set, [AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
