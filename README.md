@@ -10,7 +10,20 @@ Currently, rotator supports the following sources...
 * AWS Systems Manager Parameter Store
 * AWS Secrets Manager
 
-We go into each source and sink in more detail below.
+## Table of contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Flags](#flags)
+- [Monitoring](#monitoring)
+- [Sources](#sources)
+    - [AWS IAM](#aws-iam-aws)
+- [Sinks](#sinks)
+    - [Travis CI](#travis-ci-travisci)
+    - [AWS Systems Manager Parameter Store](#aws-systems-manager-parameter-store-awsparameterstore)
+    - [AWS Secrets Manager](#aws-secrets-manager--awssecretsmanager)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Installation
 
@@ -47,7 +60,7 @@ secrets:
         repo_slug: example-repo
 ```
 
-## Flags
+### Flags
 `-f`, `--file`   config file to read from \
 `-y`, `--yes`    assume "yes" to all prompts and run non-interactively
 
@@ -105,3 +118,13 @@ If the `external_id` field is not set, [AWS credentials must be specified](https
 | external\_id | If set, the [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) is passed to the AWS STS AssumeRole API to assume the IAM Role specified by `role_arn` e.g. if deploying rotator on Kubernetes. | no |
 
 If the `external_id` field is not set, [AWS credentials must be specified](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) using a shared credentials file or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
+
+## Contributing
+
+Contributions and ideas are welcome! Please see [our contributing guide](CONTRIBUTING.md) and don't hesitate to open an issue or send a pull request to improve the functionality of this gem.
+
+This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/tree/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to opensource@chanzuckerberg.com.
+
+## License
+
+[MIT](https://github.com/chanzuckerberg/sorbet-rails/blob/master/LICENSE)
