@@ -9,6 +9,7 @@ require (
 	github.com/chanzuckerberg/go-misc v0.0.0-20190716060611-91021143eac9
 	github.com/fatih/color v1.7.0
 	github.com/hashicorp/go-multierror v1.0.0
+	github.com/haya14busa/goverage v0.0.0-20180129164344-eec3514a20b5 // indirect
 	github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c // indirect
 	github.com/leesper/go_rng v0.0.0-20190531154944-a612b043e353 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
