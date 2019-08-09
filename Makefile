@@ -5,11 +5,11 @@ install:
 
 .PHONY: test
 test:
-	go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+	gotest -v -coverprofile=coverage.txt -covermode=atomic ./...
 
 .PHONY: test-all
 test-all:
-	go test -v -coverprofile=coverage.txt -covermode=atomic ./... -tags=integration
+	gotest -v -coverprofile=coverage.txt -covermode=atomic ./... -tags=integration
 
 .PHONY: test-coverage
 test-coverage:  ## run the test with proper coverage reporting
