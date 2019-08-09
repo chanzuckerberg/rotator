@@ -12,4 +12,4 @@ secrets:
     kind: aws
     max_age: 1h40m0s
     role_arn: arn:aws:iam::exampleAccount:role/admin
-    username: rotator_test
+    username: test-user

@@ -1,3 +1,5 @@
+// +build integration
+
 package cmd_test
 
 import (
@@ -18,21 +20,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const (
-	userName = "rotator_test"
-	repoSlug = "chanzuckerberg/rotator"
+var (
+	awsRoleArn     = os.Getenv("ROLE_ARN")
+	awsUserName    = os.Getenv("USER") // "rotator_test" // TODO: change to test-user? (created with terraform)
+	travisToken    = os.Getenv("TRAVIS_API_AUTH_TOKEN")
+	travisRepoSlug = os.Getenv("REPO_SLUG")
 )
 
 func TestRotate(t *testing.T) {
 	// set up AWS session and IAM service client
 	sess, _ := session.NewSession(&aws.Config{})
-	roleArn := os.Getenv("ROLE_ARN")
-	sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn) // the new Credentials object wraps the AssumeRoleProvider
+	sess.Config.Credentials = stscreds.NewCredentials(sess, awsRoleArn) // the new Credentials object wraps the AssumeRoleProvider
 	awsClient := cziAws.New(sess).WithIAM(sess.Config)
 
 	// set up Travis CI API client
 	travisClient := travis.NewClient(sink.TravisBaseURL, "")
-	travisToken := os.Getenv("TRAVIS_API_AUTH_TOKEN")
 	_ = travisClient.Authentication.UsingTravisToken(travisToken)
 
 	tests := []struct {
@@ -62,7 +64,7 @@ func TestRotate(t *testing.T) {
 				Secrets: []config.Secret{
 					config.Secret{
 						Name:   "test",
-						Source: source.NewAwsIamSource().WithUserName(userName).WithRoleArn(roleArn).WithAwsClient(awsClient),
+						Source: source.NewAwsIamSource().WithUserName(awsUserName).WithRoleArn(awsRoleArn).WithAwsClient(awsClient),
 						Sinks: sink.Sinks{
 							&sink.TravisCiSink{
 								BaseSink: sink.BaseSink{
@@ -71,7 +73,7 @@ func TestRotate(t *testing.T) {
 										source.AwsSecretAccessKey: "TEST_AWS_SECRET_ACCESS_KEY",
 									},
 								},
-								RepoSlug: repoSlug,
+								RepoSlug: travisRepoSlug,
 								Client:   travisClient},
 						},
 					},
