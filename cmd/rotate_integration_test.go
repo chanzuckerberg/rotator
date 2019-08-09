@@ -22,7 +22,7 @@ import (
 
 var (
 	awsRoleArn     = os.Getenv("ROLE_ARN")
-	awsUserName    = os.Getenv("USER") // "rotator_test" // TODO: change to test-user? (created with terraform)
+	awsUserName    = os.Getenv("AWS_USER") // "rotator_test" // TODO: change to test-user? (created with terraform)
 	travisToken    = os.Getenv("TRAVIS_API_AUTH_TOKEN")
 	travisRepoSlug = os.Getenv("REPO_SLUG")
 )
