@@ -7,12 +7,13 @@ env:
   - GO111MODULE=on
 install:
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
+  - go get -u github.com/rakyll/gotest
   - go get -u github.com/haya14busa/goverage
 jobs:
   include:
     - stage: test
       script:
-        - make test
+        - make test-coverage
       after_success:
         - bash <(curl -s https://codecov.io/bash)
     - stage: test
