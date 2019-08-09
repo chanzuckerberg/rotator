@@ -2,6 +2,7 @@ package source
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -60,26 +61,27 @@ func (src *AwsIamSource) RotateKeys(ctx context.Context) (*iam.AccessKey, error)
 	svc := src.Client.IAM.Svc
 
 	// list a user's access keys
-	keys, err := svc.ListAccessKeysWithContext(ctx, &iam.ListAccessKeysInput{
+	out, err := svc.ListAccessKeysWithContext(ctx, &iam.ListAccessKeysInput{
 		UserName: aws.String(src.UserName),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to list access keys")
 	}
 
-	if len(keys.AccessKeyMetadata) == 2 {
-		// identify older access key
-		var olderKey *iam.AccessKeyMetadata
-		if keys.AccessKeyMetadata[1].CreateDate.After(*keys.AccessKeyMetadata[0].CreateDate) {
-			olderKey = keys.AccessKeyMetadata[0]
-		} else {
-			olderKey = keys.AccessKeyMetadata[1]
-		}
+	keys := out.AccessKeyMetadata
+	sort.Slice(keys, func(i, j int) bool { return keys[i].CreateDate.Before(*keys[j].CreateDate) })
+	// write test to verify ascending
 
-		// nothing to do if key within max age
-		if time.Since(*olderKey.CreateDate) <= src.MaxAge {
+	if len(keys) == 2 {
+		olderKey := keys[0]
+		newerKey := keys[1]
+
+		// nothing to do if either key within max age
+		// -- this ensures that all jobs using the older key (i.e. before newer key is created) have completed
+		if time.Since(*olderKey.CreateDate) <= src.MaxAge || time.Since(*newerKey.CreateDate) <= src.MaxAge {
 			return nil, nil
 		}
+
 		// else delete key
 		_, err = svc.DeleteAccessKeyWithContext(ctx, &iam.DeleteAccessKeyInput{
 			AccessKeyId: aws.String(*olderKey.AccessKeyId),
