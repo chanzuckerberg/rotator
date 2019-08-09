@@ -17,3 +17,9 @@ lint: # run the fast go linters
 deps:
 	go mod tidy
 	go mod vendor
+
+.PHONY: release
+release: ## run a release
+	bff bump
+	git push
+	goreleaser release
