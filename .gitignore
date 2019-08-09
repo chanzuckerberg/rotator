@@ -3,3 +3,5 @@ rotator
 
 coverage.txt
 coverage.out
+
+cmd/testdata
