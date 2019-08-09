@@ -1,4 +1,5 @@
 .PHONY: install	# tells Make that the target is not associated with a file
+
 install:
 	go install
 
@@ -9,6 +10,11 @@ test:
 .PHONY: test-all
 test-all:
 	go test -v -coverprofile=coverage.txt -covermode=atomic ./... -tags=integration
+
+.PHONY: test-coverage
+test-coverage:  ## run the test with proper coverage reporting
+	goverage -coverprofile=coverage.out -covermode=atomic ./...
+	go tool cover -html=coverage.out
 
 .PHONY: lint
 lint: # run the fast go linters
