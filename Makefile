@@ -6,6 +6,10 @@ install:
 test:
 	go test -v -coverprofile=coverage.txt -covermode=atomic ./...
 
+.PHONY: test-all
+test-all:
+	go test -v -coverprofile=coverage.txt -covermode=atomic ./... -tags=integration
+
 .PHONY: lint
 lint: # run the fast go linters
 	golangci-lint run --no-config \

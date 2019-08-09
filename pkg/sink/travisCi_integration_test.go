@@ -15,8 +15,11 @@ import (
 
 const (
 	baseURL     = travis.ApiComUrl
-	travisToken = os.Getenv("TRAVIS_API_AUTH_TOKEN")
 	repoSlug    = "chanzuckerberg/rotator"
+)
+
+var (
+		travisToken = os.Getenv("TRAVIS_API_AUTH_TOKEN")
 )
 
 func TestWriteToTravisCiSink_Integration(t *testing.T) {
