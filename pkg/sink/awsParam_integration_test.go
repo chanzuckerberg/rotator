@@ -18,7 +18,11 @@ import (
 )
 
 const (
-	region = "us-west-2"
+	defaultRegion = "us-west-2"
+)
+
+var (
+	roleArn = os.Getenv("ROLE_ARN")
 )
 
 func TestWriteToAwsParamSink_Integration(t *testing.T) {
@@ -26,10 +30,9 @@ func TestWriteToAwsParamSink_Integration(t *testing.T) {
 
 	// Create a SSM client from a session.
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region), // SSM functions require region configuration
+		Region: aws.String(defaultRegion), // SSM functions require region configuration
 	})
 	r.Nil(err)
-	roleArn := os.Getenv("ROLE_ARN")
 	sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn) // the new Credentials object wraps the AssumeRoleProvider
 	client := cziAws.New(sess).WithSSM(sess.Config)
 
