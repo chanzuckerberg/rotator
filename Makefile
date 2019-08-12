@@ -1,4 +1,11 @@
-.PHONY: install	# tells Make that the target is not associated with a file
+.PHONY: setup
+setup: # setup development dependencies
+	go get github.com/rakyll/gotest
+	go install github.com/rakyll/gotest
+	go get -u github.com/haya14busa/goverage
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
+
+.PHONY: install	# .PHONY tells Make that the target is not associated with a file
 install:
 	go install
 
