@@ -1,5 +1,6 @@
 .PHONY: setup
 setup: # setup development dependencies
+	export GO111MODULE=on
 	go get github.com/rakyll/gotest
 	go install github.com/rakyll/gotest
 	go get -u github.com/haya14busa/goverage
@@ -11,7 +12,16 @@ install:
 
 .PHONY: test
 test:
-	go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+	gotest -v -coverprofile=coverage.txt -covermode=atomic ./...
+
+.PHONY: test-all
+test-all:
+	gotest -v -coverprofile=coverage.txt -covermode=atomic ./... -tags=integration
+
+.PHONY: test-coverage
+test-coverage:  ## run the test with proper coverage reporting
+	goverage -coverprofile=coverage.out -covermode=atomic ./...
+	go tool cover -html=coverage.out
 
 .PHONY: lint
 lint: # run the fast go linters

@@ -2,3 +2,6 @@ rotator
 .vscode
 
 coverage.txt
+coverage.out
+
+cmd/testdata

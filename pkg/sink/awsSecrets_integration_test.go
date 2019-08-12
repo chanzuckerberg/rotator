@@ -4,7 +4,6 @@ package sink_test
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -22,10 +21,9 @@ func TestWriteToAwsSecretsManagerSink_Integration(t *testing.T) {
 
 	// create a Secrets Manager client from a session.
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region), // Sessions Manager functions require region configuration
+		Region: aws.String(defaultRegion), // Sessions Manager functions require region configuration
 	})
 	r.Nil(err)
-	roleArn := os.Getenv("ROLE_ARN")
 	sess.Config.Credentials = stscreds.NewCredentials(sess, roleArn) // the new Credentials object wraps the AssumeRoleProvider
 	client := cziAws.New(sess).WithSecretsManager(sess.Config)
 
