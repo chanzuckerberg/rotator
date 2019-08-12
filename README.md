@@ -32,7 +32,6 @@ If you have a functional go environment, you can install with:
 ```bash
 $ go get github.com/chanzuckerberg/rotator
 ```
-TODO: set up goreleaser \
 TODO: provide other installation options and possibly create a wiki like [chamber](https://github.com/segmentio/chamber/wiki/Installation).
 
 ## Usage
