@@ -6,8 +6,7 @@ os:
 env:
   - GO111MODULE=on
 install:
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
-  - go get -u github.com/haya14busa/goverage
+  - make setup
 jobs:
   include:
     - stage: test
