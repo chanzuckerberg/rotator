@@ -1,7 +1,10 @@
 .PHONY: setup
 setup: # setup development dependencies
+	export GO111MODULE=on
 	go get github.com/rakyll/gotest
 	go install github.com/rakyll/gotest
+	go get -u github.com/gobuffalo/packr
+	go install github.com/gobuffalo/packr/packr
 	go get -u github.com/haya14busa/goverage
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 
@@ -19,6 +22,7 @@ test-all:
 
 .PHONY: test-coverage
 test-coverage:  ## run the test with proper coverage reporting
+	packr
 	goverage -coverprofile=coverage.out -covermode=atomic ./...
 	go tool cover -html=coverage.out
 
