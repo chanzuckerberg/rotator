@@ -80,7 +80,7 @@ github.com/howeyc/gopass
 github.com/inconshreveable/mousetrap
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
-# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+# github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/mattn/go-colorable v0.1.2
 github.com/mattn/go-colorable
@@ -90,7 +90,7 @@ github.com/mattn/go-isatty
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/segmentio/go-prompt v1.2.0
+# github.com/segmentio/go-prompt v1.2.1-0.20161017233205-f0d19b6901ad
 github.com/segmentio/go-prompt
 # github.com/shuheiktgw/go-travis v0.2.3
 github.com/shuheiktgw/go-travis
@@ -100,16 +100,16 @@ github.com/sirupsen/logrus
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
-# github.com/stretchr/objx v0.1.1
+# github.com/stretchr/objx v0.2.0
 github.com/stretchr/objx
 # github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/require
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/suite
 github.com/stretchr/testify/assert
-# golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+# golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/sys v0.0.0-20190422165155-953cdadca894
+# golang.org/x/sys v0.0.0-20190812172437-4e8604ab3aff
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # gopkg.in/yaml.v2 v2.2.2

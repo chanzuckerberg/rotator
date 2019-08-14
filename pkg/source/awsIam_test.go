@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
 	"github.com/chanzuckerberg/rotator/pkg/source"
@@ -92,7 +93,37 @@ func (ts *TestSuite) TestAwsIamRotateOneKey() {
 	r.NotEqual(*key.AccessKeyId, *newKey.AccessKeyId)
 }
 
-func (ts *TestSuite) TestAwsIamRotateTwoKeysWithDelete() {
+func (ts *TestSuite) TestAwsIamRotateTwoKeysBothOlder() {
+	t := ts.T()
+	r := require.New(t)
+
+	// mock aws list access keys functionality
+	key1 := &iam.AccessKeyMetadata{}
+	key1.SetAccessKeyId("accessKeyId1")
+	key1.SetCreateDate(time.Now().Add(-1000 * time.Minute))
+	key2 := &iam.AccessKeyMetadata{}
+	key2.SetAccessKeyId("accessKeyId2")
+	key2.SetCreateDate(time.Now().Add(-10000 * time.Minute))
+	keys := &iam.ListAccessKeysOutput{}
+	keys.SetAccessKeyMetadata([]*iam.AccessKeyMetadata{
+		key1,
+		key2,
+	})
+	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+
+	// rotate keys - a new key should be returned
+	newKey, err := ts.src.RotateKeys(ts.ctx)
+	r.Nil(err)
+	r.NotNil(newKey)
+
+	// check that older key was deleted
+	ts.mockIAM.AssertCalled(t, "DeleteAccessKeyWithContext", &iam.DeleteAccessKeyInput{
+		AccessKeyId: aws.String(*key2.AccessKeyId),
+		UserName:    aws.String(userName),
+	})
+}
+
+func (ts *TestSuite) TestAwsIamRotateTwoKeysOneOlder() {
 	t := ts.T()
 	r := require.New(t)
 
@@ -110,14 +141,13 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysWithDelete() {
 	})
 	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
 
-	// rotate keys - a new key should be returned
+	// rotate keys - no key should be createdd
 	newKey, err := ts.src.RotateKeys(ts.ctx)
 	r.Nil(err)
-	r.NotNil(newKey)
-	r.NotEqual(*key1.AccessKeyId, *newKey.AccessKeyId)
+	r.Nil(newKey)
 }
 
-func (ts *TestSuite) TestAwsIamRotateTwoKeysNoDelete() {
+func (ts *TestSuite) TestAwsIamRotateTwoKeysNoneOlder() {
 	t := ts.T()
 	r := require.New(t)
 
