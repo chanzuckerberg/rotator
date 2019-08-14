@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
 	"github.com/chanzuckerberg/rotator/pkg/source"
@@ -102,7 +103,7 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysBothOlder() {
 	key1.SetCreateDate(time.Now().Add(-1000 * time.Minute))
 	key2 := &iam.AccessKeyMetadata{}
 	key2.SetAccessKeyId("accessKeyId2")
-	key2.SetCreateDate(time.Now().Add(-500 * time.Minute))
+	key2.SetCreateDate(time.Now().Add(-10000 * time.Minute))
 	keys := &iam.ListAccessKeysOutput{}
 	keys.SetAccessKeyMetadata([]*iam.AccessKeyMetadata{
 		key1,
@@ -114,7 +115,12 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysBothOlder() {
 	newKey, err := ts.src.RotateKeys(ts.ctx)
 	r.Nil(err)
 	r.NotNil(newKey)
-	r.NotEqual(*key1.AccessKeyId, *newKey.AccessKeyId)
+
+	// check that older key was deleted
+	ts.mockIAM.AssertCalled(t, "DeleteAccessKeyWithContext", &iam.DeleteAccessKeyInput{
+		AccessKeyId: aws.String(*key2.AccessKeyId),
+		UserName:    aws.String(userName),
+	})
 }
 
 func (ts *TestSuite) TestAwsIamRotateTwoKeysOneOlder() {
@@ -135,7 +141,7 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysOneOlder() {
 	})
 	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
 
-	// rotate keys - a new key should be returned
+	// rotate keys - no key should be createdd
 	newKey, err := ts.src.RotateKeys(ts.ctx)
 	r.Nil(err)
 	r.Nil(newKey)
