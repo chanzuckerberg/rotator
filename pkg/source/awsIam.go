@@ -70,7 +70,6 @@ func (src *AwsIamSource) RotateKeys(ctx context.Context) (*iam.AccessKey, error)
 
 	keys := out.AccessKeyMetadata
 	sort.Slice(keys, func(i, j int) bool { return keys[i].CreateDate.Before(*keys[j].CreateDate) })
-	// write test to verify ascending
 
 	if len(keys) == 2 {
 		olderKey := keys[0]
