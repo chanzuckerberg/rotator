@@ -35,9 +35,9 @@ $ go get github.com/chanzuckerberg/rotator
 ```
 
 ### Homebrew
-```
-brew tap chanzuckerberg/tap
-brew install bff
+```bash
+$ brew tap chanzuckerberg/tap
+$ brew install bff
 ```
 
 ## Usage
