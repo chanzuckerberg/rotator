@@ -4,4 +4,4 @@ brew:
     owner: chanzuckerberg
     name: homebrew-tap
   homepage: "https://github.com/chanzuckerberg/rotator"
-  test: system "#{bin}/rotator version"
+  test: system "#{bin}/rotator --help"
