@@ -7,9 +7,11 @@ brews:
     test: system "#{bin}/rotator --help"
 dockers:
   - dockerfile: Dockerfile
-    images:
+    image_templates:
       - docker.pkg.github.com/chanzuckerberg/rotator/rotator:{{.Commit}}
       - docker.pkg.github.com/chanzuckerberg/rotator/rotator:{{.Version}}
       - docker.pkg.github.com/chanzuckerberg/rotator/rotator:latest
     extra_files:
       - .
+env_files:
+  github_token: ~/.config/goreleaser/github_token
