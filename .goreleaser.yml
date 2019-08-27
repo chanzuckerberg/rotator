@@ -20,9 +20,7 @@ brews:
 dockers:
   - dockerfile: Dockerfile
     image_templates:
-      - docker.pkg.github.com/chanzuckerberg/rotator/rotator:{{.Commit}}
-      - docker.pkg.github.com/chanzuckerberg/rotator/rotator:{{.Version}}
-      - docker.pkg.github.com/chanzuckerberg/rotator/rotator:latest
+      - docker.pkg.github.com/chanzuckerberg/rotator:{{.Version}}
     extra_files:
       - cmd
       - go.mod

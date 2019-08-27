@@ -45,4 +45,4 @@ deps:
 release: ## run a release
 	bff bump
 	git push
-	goreleaser release
+	goreleaser release --rm-dist
