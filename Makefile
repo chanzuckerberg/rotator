@@ -5,6 +5,7 @@ setup: # setup development dependencies
 	go install github.com/rakyll/gotest
 	go get -u github.com/haya14busa/goverage
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
+	curl -L https://raw.githubusercontent.com/chanzuckerberg/bff/master/download.sh | sh
 
 .PHONY: install	# .PHONY tells Make that the target is not associated with a file
 install:
@@ -21,6 +22,11 @@ test-all:
 .PHONY: test-coverage
 test-coverage:  ## run the test with proper coverage reporting
 	goverage -coverprofile=coverage.out -covermode=atomic ./...
+	go tool cover -html=coverage.out
+
+.PHONY: test-coverage-all
+test-coverage:  ## run the test with proper coverage reporting
+	goverage -coverprofile=coverage.out -covermode=atomic ./... -tags=integration
 	go tool cover -html=coverage.out
 
 .PHONY: lint

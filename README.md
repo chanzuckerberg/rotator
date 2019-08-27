@@ -3,7 +3,7 @@
 Rotator is a tool for rotating credentials on a regular schedule. It works by reading a YAML configuration file with a list of secret. Each secret consists of a source from which rotator will read new credentials, and one or more destinations (from here on referred to as sinks) to write the new credentials to.
 
 Currently, rotator supports the following sources...
-* AWS IAM 
+* AWS IAM
 
 ... and sinks:
 * Travis CI
@@ -27,12 +27,18 @@ Currently, rotator supports the following sources...
 
 ## Installation
 
+### go get
 If you have a functional go environment, you can install with:
 
 ```bash
 $ go get github.com/chanzuckerberg/rotator
 ```
-TODO: provide other installation options and possibly create a wiki like [chamber](https://github.com/segmentio/chamber/wiki/Installation).
+
+### Homebrew
+```bash
+$ brew tap chanzuckerberg/tap
+$ brew install rotator
+```
 
 ## Usage
 Execute rotator with the `rotate` command, passing the `--file/-f` flag to specify the configuration file:
@@ -47,7 +53,7 @@ secrets:
   - name: example_secret
     source:
       kind: aws
-      max_age: 1h40m0s 
+      max_age: 1h40m0s
       role_arn: arn:aws:iam::123456789101:role/admin
       username: example-user
       external_id: ""
@@ -55,7 +61,7 @@ secrets:
       - kind: TravisCI
         key_to_name:
           accessKeyId: EXAMPLE_AWS_ACCESS_KEY_ID
-          secretAccessKey: EXAMPLE_AWS_SECRET_ACCESS_KEY   
+          secretAccessKey: EXAMPLE_AWS_SECRET_ACCESS_KEY
         repo_slug: example-repo
 ```
 

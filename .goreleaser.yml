@@ -1,0 +1,7 @@
+brew:
+  description: "Rotating credentials."
+  github:
+    owner: chanzuckerberg
+    name: homebrew-tap
+  homepage: "https://github.com/chanzuckerberg/rotator"
+  test: system "#{bin}/rotator --help"
