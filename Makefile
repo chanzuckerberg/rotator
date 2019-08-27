@@ -25,7 +25,7 @@ test-coverage:  ## run the test with proper coverage reporting
 	go tool cover -html=coverage.out
 
 .PHONY: test-coverage-all
-test-coverage:  ## run the test with proper coverage reporting
+test-coverage-integration:  ## run the test with proper coverage reporting
 	goverage -coverprofile=coverage.out -covermode=atomic ./... -tags=integration
 	go tool cover -html=coverage.out
 
