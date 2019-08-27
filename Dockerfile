@@ -8,7 +8,10 @@ ENV GO111MODULE=on GOFLAGS=-mod=vendor
 WORKDIR /app
 
 # Copy the source from the current directory to the Working Directory inside the container
-COPY . .
+COPY cmd cmd
+COPY go.mod go.sum main.go ./
+COPY vendor vendor
+COPY pkg pkg
 
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=linux go build -o rotator .

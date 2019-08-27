@@ -1,3 +1,15 @@
+builds:
+  - goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+archives:
+  - files:
+      - none*
+release:
+  prerelease: false
+
 brews:
   - description: "Rotating credentials."
     github:
@@ -12,6 +24,11 @@ dockers:
       - docker.pkg.github.com/chanzuckerberg/rotator/rotator:{{.Version}}
       - docker.pkg.github.com/chanzuckerberg/rotator/rotator:latest
     extra_files:
-      - .
+      - cmd
+      - go.mod
+      - go.sum
+      - main.go
+      - vendor
+      - pkg
 env_files:
   github_token: ~/.config/goreleaser/github_token

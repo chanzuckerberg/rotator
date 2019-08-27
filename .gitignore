@@ -5,3 +5,5 @@ coverage.txt
 coverage.out
 
 cmd/testdata
+
+dist
