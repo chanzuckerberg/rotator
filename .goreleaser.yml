@@ -1,7 +1,15 @@
-brew:
-  description: "Rotating credentials."
-  github:
-    owner: chanzuckerberg
-    name: homebrew-tap
-  homepage: "https://github.com/chanzuckerberg/rotator"
-  test: system "#{bin}/rotator --help"
+brews:
+  - description: "Rotating credentials."
+    github:
+      owner: chanzuckerberg
+      name: homebrew-tap
+    homepage: "https://github.com/chanzuckerberg/rotator"
+    test: system "#{bin}/rotator --help"
+dockers:
+  - dockerfile: Dockerfile
+    images:
+      - docker.pkg.github.com/chanzuckerberg/rotator/rotator:{{.Commit}}
+      - docker.pkg.github.com/chanzuckerberg/rotator/rotator:{{.Version}}
+      - docker.pkg.github.com/chanzuckerberg/rotator/rotator:latest
+    extra_files:
+      - .
