@@ -1,6 +1,6 @@
 module github.com/chanzuckerberg/rotator
 
-go 1.12
+go 1.13
 
 require (
 	github.com/airbrake/gobrake v3.7.4+incompatible
