@@ -18,6 +18,7 @@ Currently, rotator supports the following sources...
 - [Monitoring](#monitoring)
 - [Sources](#sources)
     - [AWS IAM](#aws-iam-aws)
+    - [Env](#env)
 - [Sinks](#sinks)
     - [Travis CI](#travis-ci-travisci)
     - [AWS Systems Manager Parameter Store](#aws-systems-manager-parameter-store-awsparameterstore)
@@ -79,6 +80,11 @@ All sources must have the following fields in addition to any source-specific fi
 |------|-------------|
 | kind | The kind of source. Acceptable values: `aws`. |
 | max\_age | The max age for a credential before it will be rotated by rotator. The duration string should follow the same format as for [`time.ParseDuration()`](https://golang.org/pkg/time/#ParseDuration) e.g. "2h45m". |
+
+### Env (`env`)
+| Name | Description | Required |
+|------|-------------|:-----:|
+| name | The name of the environment variable to read | yes |
 
 ### AWS IAM (`aws`)
 | Name | Description | Required |
