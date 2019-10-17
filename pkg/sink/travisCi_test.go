@@ -47,10 +47,15 @@ func (ts *TravisTestSuite) SetupTest() {
 	ts.client, ts.mux, _, ts.teardown = setup()
 	t := ts.T()
 
-	// mock ListByRepoSlug()
 	ts.mux.HandleFunc(fmt.Sprintf("/repo/%s/env_vars", testRepoSlug), func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodGet)
-		fmt.Fprintf(w, `{"env_vars": [{"id":"%s","name":"%s","value":"","public":%t}]}`, id, name, public)
+		if r.Method == http.MethodGet {
+			// mock ListByRepoSlug()
+			fmt.Fprintf(w, `{"env_vars": [{"id":"%s","name":"%s","value":"","public":%t}]}`, id, name, public)
+			return
+		}
+		// mock CreateByRepoSlug()
+		testBody(t, r, fmt.Sprintf(`{"env_var.name":"%s","env_var.value":"%s","env_var.public":%t}`, fakeName, value, public)+"\n")
+		fmt.Fprintf(w, `{"name":"%s","value":"%s","public":%t}`, fakeName, value, public)
 	})
 
 	// mock UpdateByRepoSlug()
@@ -78,7 +83,7 @@ func (ts *TravisTestSuite) TestWriteToTravisCiSink_FakeEnvVar() {
 	t := ts.T()
 	r := require.New(t)
 	err := ts.sink.Write(ts.ctx, fakeName, value)
-	r.Error(err, fmt.Sprintf("env var %s does not exist in Travis CI for repo %s", fakeName, testRepoSlug))
+	r.Nil(err)
 }
 
 func TestTravisProviderSuite(t *testing.T) {

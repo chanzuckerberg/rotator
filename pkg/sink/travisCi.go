@@ -10,10 +10,11 @@ import (
 )
 
 const (
-	// Default values
+	// TravisBaseURL is the base url for travisCI
 	TravisBaseURL string = travis.ApiComUrl
 )
 
+// TravisCiSink returns the
 type TravisCiSink struct {
 	BaseSink `yaml:",inline"`
 
@@ -21,6 +22,7 @@ type TravisCiSink struct {
 	Client   *travis.Client `yaml:"client"`
 }
 
+// WithTravisClient configures a travisCI client for this sink
 func (sink *TravisCiSink) WithTravisClient(client *travis.Client) *TravisCiSink {
 	sink.Client = client
 	return sink
@@ -37,6 +39,9 @@ func (sink *TravisCiSink) Write(ctx context.Context, name string, val string) er
 	if resp.StatusCode != http.StatusOK {
 		return errors.New(fmt.Sprintf("unable to list env vars in Travis CI for repo %s: invalid http status: %s", sink.RepoSlug, resp.Status))
 	}
+
+	body := &travis.EnvVarBody{Name: name, Value: val}
+
 	es := make(map[string]*travis.EnvVar)
 	for _, e := range esList {
 		es[*e.Name] = e
@@ -45,20 +50,34 @@ func (sink *TravisCiSink) Write(ctx context.Context, name string, val string) er
 	// find env var by name
 	e, ok := es[name]
 	if !ok {
-		return errors.New(fmt.Sprintf("env var %s does not exist in Travis CI for repo %s", name, sink.RepoSlug))
+		return sink.create(ctx, body)
 	}
+	return sink.update(ctx, body, *e.Id)
+}
 
-	// update env var
-	body := travis.EnvVarBody{Name: name, Value: val, Public: *e.Public}
-	_, resp, err = sink.Client.EnvVars.UpdateByRepoSlug(ctx, sink.RepoSlug, *e.Id, &body)
+func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) error {
+	_, resp, err := sink.Client.EnvVars.CreateByRepoSlug(ctx, sink.RepoSlug, body)
 	if err != nil {
-		return errors.Wrapf(err, "unable to update env var %s in Travis CI for repo %s: %s", name, sink.RepoSlug, err)
-	} else if resp.StatusCode != http.StatusOK {
-		return errors.New(fmt.Sprintf("unable to update env var %s in Travis CI for repo %s: invalid http status: %s", name, sink.RepoSlug, resp.Status))
+		return errors.Wrapf(err, "unable to create env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(fmt.Sprintf("unable to create env var %s in Travis CI for repo %s: invalid http status: %s", body.Name, sink.RepoSlug, resp.Status))
 	}
 	return nil
 }
 
+func (sink *TravisCiSink) update(ctx context.Context, body *travis.EnvVarBody, envID string) error {
+	_, resp, err := sink.Client.EnvVars.UpdateByRepoSlug(ctx, sink.RepoSlug, envID, body)
+	if err != nil {
+		return errors.Wrapf(err, "unable to update env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(fmt.Sprintf("unable to update env var %s in Travis CI for repo %s: invalid http status: %s", body.Name, sink.RepoSlug, resp.Status))
+	}
+	return nil
+}
+
+// Kind returns the kind of this sink
 func (sink *TravisCiSink) Kind() Kind {
 	return KindTravisCi
 }
