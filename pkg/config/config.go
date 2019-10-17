@@ -113,6 +113,11 @@ func unmarshalSource(srcIface interface{}) (source.Source, error) {
 			return nil, errors.Wrap(err, "incorrect max_age format in aws iam source config")
 		}
 		src = source.NewAwsIamSource().WithUserName(srcMapStr["username"]).WithAwsClient(client).WithMaxAge(maxAge)
+	case source.KindEnv:
+		if err = validate(srcMapStr, "name"); err != nil {
+			return nil, errors.Wrap(err, "missing keys in env source config")
+		}
+		src = source.NewEnvSource().WithName(srcMapStr["name"])
 	default:
 		return nil, source.ErrUnknownKind
 	}

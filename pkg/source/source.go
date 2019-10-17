@@ -21,10 +21,15 @@ type Error string
 func (e Error) Error() string { return string(e) }
 
 const (
-	KindDummy      Kind  = "dummy"
-	KindAws        Kind  = "aws"
+	KindDummy Kind = "dummy"
+	KindAws   Kind = "aws"
+	KindEnv   Kind = "env"
+)
+const (
 	ErrUnknownKind Error = "unknown source"
+)
 
+const (
 	// Default values
 	DefaultMaxAge time.Duration = 100 * time.Minute
 )
