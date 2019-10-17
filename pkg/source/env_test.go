@@ -14,6 +14,7 @@ func TestReadFromEnvSource(t *testing.T) {
 	envName := uuid.New()
 
 	src := source.NewEnvSource().WithName(envName.String())
+	r.Equal(source.KindEnv, src.Kind())
 
 	// Set it and then forget it
 	r.NoError(os.Setenv(envName.String(), "testo"))
@@ -22,4 +23,11 @@ func TestReadFromEnvSource(t *testing.T) {
 	vals, err := src.Read()
 	r.NoError(err)
 	r.Equal("testo", vals[envName.String()])
+
+	// Error if not present
+	envNotPresent := uuid.New()
+	srcNotPresent := source.NewEnvSource().WithName(envNotPresent.String())
+
+	vals, err = srcNotPresent.Read()
+	r.Error(err, "Environment variable")
 }
