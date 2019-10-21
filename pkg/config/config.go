@@ -218,7 +218,7 @@ func validate(m map[string]string, keys ...string) error {
 			errs = multierror.Append(errs, errors.New(fmt.Sprintf("missing %s", k)))
 		}
 	}
-	return errs.ErrorOrNil()
+	return errors.Wrapf(errs.ErrorOrNil(), "config %#v missing keys", m)
 }
 
 func (secret *Secret) UnmarshalYAML(unmarshal func(interface{}) error) error {
