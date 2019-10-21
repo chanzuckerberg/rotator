@@ -3,7 +3,6 @@ package sink
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
@@ -36,7 +35,7 @@ func (sink *TravisCiSink) Write(ctx context.Context, name string, val string) er
 	if err != nil {
 		return errors.Wrapf(err, "unable to list env vars in Travis CI for repo %s", sink.RepoSlug)
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 		return errors.New(fmt.Sprintf("unable to list env vars in Travis CI for repo %s: invalid http status: %s", sink.RepoSlug, resp.Status))
 	}
 
@@ -60,7 +59,7 @@ func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) e
 	if err != nil {
 		return errors.Wrapf(err, "unable to create env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 		return errors.New(fmt.Sprintf("unable to create env var %s in Travis CI for repo %s: invalid http status: %s", body.Name, sink.RepoSlug, resp.Status))
 	}
 	return nil
@@ -71,7 +70,7 @@ func (sink *TravisCiSink) update(ctx context.Context, body *travis.EnvVarBody, e
 	if err != nil {
 		return errors.Wrapf(err, "unable to update env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 		return errors.New(fmt.Sprintf("unable to update env var %s in Travis CI for repo %s: invalid http status: %s", body.Name, sink.RepoSlug, resp.Status))
 	}
 	return nil
