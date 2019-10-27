@@ -3,22 +3,19 @@ module github.com/chanzuckerberg/rotator
 go 1.13
 
 require (
-	github.com/airbrake/gobrake v3.7.4+incompatible
 	github.com/aws/aws-sdk-go v1.25.14
 	github.com/caio/go-tdigest v2.3.0+incompatible // indirect
 	github.com/chanzuckerberg/go-misc v0.0.0-20191016143922-52a18771c2dc
 	github.com/fatih/color v1.7.0
+	github.com/getsentry/sentry-go v0.3.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/leesper/go_rng v0.0.0-20190531154944-a612b043e353 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
-	github.com/onsi/ginkgo v1.8.0 // indirect
-	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/segmentio/go-prompt v1.2.1-0.20161017233205-f0d19b6901ad // build fails otherwise
 	github.com/shuheiktgw/go-travis v0.2.4

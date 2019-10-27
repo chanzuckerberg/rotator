@@ -1,6 +1,3 @@
-# github.com/airbrake/gobrake v3.7.4+incompatible
-github.com/airbrake/gobrake
-github.com/airbrake/gobrake/internal/lrucache
 # github.com/aws/aws-sdk-go v1.25.14
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -61,14 +58,14 @@ github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/aws/aws-sdk-go/service/support
 github.com/aws/aws-sdk-go/service/support/supportiface
-# github.com/caio/go-tdigest v2.3.0+incompatible
-github.com/caio/go-tdigest
 # github.com/chanzuckerberg/go-misc v0.0.0-20191016143922-52a18771c2dc
 github.com/chanzuckerberg/go-misc/aws
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
+# github.com/getsentry/sentry-go v0.3.0
+github.com/getsentry/sentry-go
 # github.com/google/go-querystring v1.0.0
 github.com/google/go-querystring/query
 # github.com/google/uuid v1.1.1
