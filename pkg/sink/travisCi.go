@@ -71,7 +71,7 @@ func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) e
 		return nil
 	}
 
-	return retry(travisRetryAttempts, travisRetrySleep, f)
+	return retry(ctx, travisRetryAttempts, travisRetrySleep, f)
 }
 
 func (sink *TravisCiSink) update(ctx context.Context, body *travis.EnvVarBody, envID string) error {
@@ -85,7 +85,7 @@ func (sink *TravisCiSink) update(ctx context.Context, body *travis.EnvVarBody, e
 		}
 		return nil
 	}
-	return retry(travisRetryAttempts, travisRetrySleep, f)
+	return retry(ctx, travisRetryAttempts, travisRetrySleep, f)
 }
 
 // Kind returns the kind of this sink
@@ -93,10 +93,10 @@ func (sink *TravisCiSink) Kind() Kind {
 	return KindTravisCi
 }
 
-func retry(attempts int, sleep time.Duration, f func() error) error {
+func retry(ctx context.Context, attempts int, sleep time.Duration, f func(context.Context) error) error {
 	var err error
 	for i := 0; i < attempts; i++ {
-		err = f()
+		err = f(ctx)
 		if err == nil {
 			return nil
 		}
