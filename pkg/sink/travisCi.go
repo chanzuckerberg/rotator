@@ -3,6 +3,8 @@ package sink
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
@@ -11,6 +13,9 @@ import (
 const (
 	// TravisBaseURL is the base url for travisCI
 	TravisBaseURL string = travis.ApiComUrl
+
+	travisRetryAttempts = 5
+	travisRetrySleep    = time.Second
 )
 
 // TravisCiSink returns the
@@ -55,28 +60,49 @@ func (sink *TravisCiSink) Write(ctx context.Context, name string, val string) er
 }
 
 func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) error {
-	_, resp, err := sink.Client.EnvVars.CreateByRepoSlug(ctx, sink.RepoSlug, body)
-	if err != nil {
-		return errors.Wrapf(err, "unable to create env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
+	f := func(ctx context.Context) error {
+		_, resp, err := sink.Client.EnvVars.CreateByRepoSlug(ctx, sink.RepoSlug, body)
+		if err != nil {
+			return errors.Wrapf(err, "unable to create env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
+		}
+		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+			return errors.New(fmt.Sprintf("unable to create env var %s in Travis CI for repo %s: invalid http status: %s", body.Name, sink.RepoSlug, resp.Status))
+		}
+		return nil
 	}
-	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
-		return errors.New(fmt.Sprintf("unable to create env var %s in Travis CI for repo %s: invalid http status: %s", body.Name, sink.RepoSlug, resp.Status))
-	}
-	return nil
+
+	return retry(ctx, travisRetryAttempts, travisRetrySleep, f)
 }
 
 func (sink *TravisCiSink) update(ctx context.Context, body *travis.EnvVarBody, envID string) error {
-	_, resp, err := sink.Client.EnvVars.UpdateByRepoSlug(ctx, sink.RepoSlug, envID, body)
-	if err != nil {
-		return errors.Wrapf(err, "unable to update env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
+	f := func(ctx context.Context) error {
+		_, resp, err := sink.Client.EnvVars.UpdateByRepoSlug(ctx, sink.RepoSlug, envID, body)
+		if err != nil {
+			return errors.Wrapf(err, "unable to update env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
+		}
+		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+			return errors.New(fmt.Sprintf("unable to update env var %s in Travis CI for repo %s: invalid http status: %s", body.Name, sink.RepoSlug, resp.Status))
+		}
+		return nil
 	}
-	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
-		return errors.New(fmt.Sprintf("unable to update env var %s in Travis CI for repo %s: invalid http status: %s", body.Name, sink.RepoSlug, resp.Status))
-	}
-	return nil
+	return retry(ctx, travisRetryAttempts, travisRetrySleep, f)
 }
 
 // Kind returns the kind of this sink
 func (sink *TravisCiSink) Kind() Kind {
 	return KindTravisCi
+}
+
+func retry(ctx context.Context, attempts int, sleep time.Duration, f func(context.Context) error) error {
+	var err error
+	for i := 0; i < attempts; i++ {
+		err = f(ctx)
+		if err == nil {
+			return nil
+		}
+
+		jitter := time.Duration(rand.Int63n(int64(sleep)))
+		time.Sleep(sleep + jitter)
+	}
+	return err
 }
