@@ -71,7 +71,7 @@ secrets:
 `-y`, `--yes`    assume "yes" to all prompts and run non-interactively
 
 ## Monitoring
-Configure [Airbrake](https://airbrake.io/) for rotator by setting the `ENV`, `AIRBRAKE_PROJECT_ID`, and `AIRBRAKE_PROJECT_KEY` environment variables.
+Configure [Sentry](https://getsentry.com/) for rotator by setting the `ENV`, `SENTRY_DSN` environment variables.
 
 ## Sources
 All sources must have the following fields in addition to any source-specific fields:
