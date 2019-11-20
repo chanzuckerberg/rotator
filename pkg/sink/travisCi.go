@@ -60,7 +60,7 @@ func (sink *TravisCiSink) Write(ctx context.Context, name string, val string) er
 }
 
 func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) error {
-	f := func() error {
+	f := func(ctx context.Context) error {
 		_, resp, err := sink.Client.EnvVars.CreateByRepoSlug(ctx, sink.RepoSlug, body)
 		if err != nil {
 			return errors.Wrapf(err, "unable to create env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
@@ -75,7 +75,7 @@ func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) e
 }
 
 func (sink *TravisCiSink) update(ctx context.Context, body *travis.EnvVarBody, envID string) error {
-	f := func() error {
+	f := func(ctx context.Context) error {
 		_, resp, err := sink.Client.EnvVars.UpdateByRepoSlug(ctx, sink.RepoSlug, envID, body)
 		if err != nil {
 			return errors.Wrapf(err, "unable to update env var %s in TravisCI repo %s", body.Name, sink.RepoSlug)
