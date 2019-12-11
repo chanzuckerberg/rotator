@@ -1,3 +1,12 @@
+SHA=$(shell git rev-parse --short HEAD)
+VERSION=$(shell cat VERSION)
+DIRTY=false
+# TODO add release flag
+GO_PACKAGE=$(shell go list)
+LDFLAGS=-ldflags "-w -s -X $(GO_PACKAGE)/util.GitSha=${SHA} -X $(GO_PACKAGE)/util.Version=${VERSION} -X $(GO_PACKAGE)/util.Dirty=${DIRTY}"
+export GOFLAGS=-mod=vendor
+export GO111MODULE=on
+
 setup: # setup development dependencies
 	export GO111MODULE=on
 	go get -u github.com/haya14busa/goverage
@@ -19,7 +28,7 @@ test-all:
 .PHONY: test-all
 
 test-coverage:  ## run the test with proper coverage reporting
-	goverage -coverprofile=coverage.out -covermode=atomic ./...
+	goverage  -coverprofile=coverage.out -covermode=atomic ./...
 	go tool cover -html=coverage.out
 .PHONY: test-coverage
 
