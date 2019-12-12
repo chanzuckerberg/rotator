@@ -8,7 +8,7 @@ export GO111MODULE=on
 
 setup: # setup development dependencies
 	export GO111MODULE=on
-	go get -u github.com/haya14busa/goverage
+	GOFLAGS='' go get -u github.com/haya14busa/goverage
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 	curl -L https://raw.githubusercontent.com/chanzuckerberg/bff/master/download.sh | sh
 	curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- v0.9.14
