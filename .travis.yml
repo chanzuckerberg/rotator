@@ -19,4 +19,4 @@ jobs:
     - name: lint
       stage: test
       script:
-        - make lint
+        - make lint-ci
