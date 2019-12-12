@@ -13,7 +13,7 @@ jobs:
     - name: test
       stage: test
       script:
-        - make test-coverage
+        - make test
       after_success:
         - bash <(curl -s https://codecov.io/bash)
     - name: lint
