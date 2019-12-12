@@ -28,7 +28,7 @@ require (
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
-	golang.org/x/tools v0.0.0-20191211222325-ac2db28e8130 // indirect
+	golang.org/x/tools v0.0.0-20191212203136-8facea2ecf42 // indirect
 	gonum.org/v1/gonum v0.0.0-20190802084026-e9a50d643359 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.2.4

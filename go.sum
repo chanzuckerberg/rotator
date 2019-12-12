@@ -233,6 +233,8 @@ golang.org/x/tools v0.0.0-20190606124116-d0a3d012864b h1:mSUCVIwDx4hfXJfWsOPfdzE
 golang.org/x/tools v0.0.0-20190606124116-d0a3d012864b/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
 golang.org/x/tools v0.0.0-20191211222325-ac2db28e8130 h1:I1qMQ9XwbfS8IeSi3wJTzkAO8cPVBQRki4RNY6+cESQ=
 golang.org/x/tools v0.0.0-20191211222325-ac2db28e8130/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
+golang.org/x/tools v0.0.0-20191212203136-8facea2ecf42 h1:K9HnGJhHohnAQJD0QScLWVvtHhw8//MaBiEJgFfs7Hg=
+golang.org/x/tools v0.0.0-20191212203136-8facea2ecf42/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gonum.org/v1/gonum v0.0.0-20180816165407-929014505bf4/go.mod h1:Y+Yx5eoAFn32cQvJDxZx5Dpnq+c3wtXuadVZAcxbbBo=
 gonum.org/v1/gonum v0.0.0-20190802084026-e9a50d643359/go.mod h1:9mxDZsDKxgMAuccQkewq682L+0eCu4dCN2yonUJTCLU=
