@@ -17,7 +17,7 @@ import (
 
 // Logger is an instance of log.Logger that is use to provide debug information about running Sentry Client
 // can be enabled by either using `Logger.SetOutput` directly or with `Debug` client option
-var Logger = log.New(ioutil.Discard, "[Sentry] ", log.LstdFlags) // nolint: gochecknoglobals
+var Logger = log.New(ioutil.Discard, "[Sentry] ", log.LstdFlags) //nolint: gochecknoglobals
 
 type EventProcessor func(event *Event, hint *EventHint) *Event
 
@@ -25,7 +25,7 @@ type EventModifier interface {
 	ApplyToEvent(event *Event, hint *EventHint) *Event
 }
 
-var globalEventProcessors []EventProcessor // nolint: gochecknoglobals
+var globalEventProcessors []EventProcessor //nolint: gochecknoglobals
 
 func AddGlobalEventProcessor(processor EventProcessor) {
 	globalEventProcessors = append(globalEventProcessors, processor)
@@ -74,7 +74,11 @@ type ClientOptions struct {
 	Environment string
 	// Maximum number of breadcrumbs.
 	MaxBreadcrumbs int
+	// An optional pointer to `http.Client` that will be used with a default HTTPTransport.
+	// Using your own client will make HTTPTransport, HTTPProxy, HTTPSProxy and CaCerts options ignored.
+	HTTPClient *http.Client
 	// An optional pointer to `http.Transport` that will be used with a default HTTPTransport.
+	// Using your own transport will make HTTPProxy, HTTPSProxy and CaCerts options ignored.
 	HTTPTransport *http.Transport
 	// An optional HTTP proxy to use.
 	// This will default to the `http_proxy` environment variable.
@@ -262,8 +266,17 @@ func (client *Client) RecoverWithContext(
 	return nil
 }
 
-// Flush notifies when all the buffered events have been sent by returning `true`
-// or `false` if timeout was reached. It calls `Flush` method of the configured `Transport`.
+// Flush waits until the underlying Transport sends any buffered events to the
+// Sentry server, blocking for at most the given timeout. It returns false if
+// the timeout was reached. In that case, some events may not have been sent.
+//
+// Flush should be called before terminating the program to avoid
+// unintentionally dropping events.
+//
+// Do not call Flush indiscriminately after every call to CaptureEvent,
+// CaptureException or CaptureMessage. Instead, to have the SDK send events over
+// the network synchronously, configure it to use the HTTPSyncTransport in the
+// call to Init.
 func (client *Client) Flush(timeout time.Duration) bool {
 	return client.Transport.Flush(timeout)
 }
@@ -298,11 +311,17 @@ func (client *Client) eventFromException(exception error, level Level) *Event {
 		stacktrace = NewStacktrace()
 	}
 
+	cause := exception
+	// Handle wrapped errors for github.com/pingcap/errors and github.com/pkg/errors
+	if ex, ok := exception.(interface{ Cause() error }); ok {
+		cause = ex.Cause()
+	}
+
 	event := NewEvent()
 	event.Level = level
 	event.Exception = []Exception{{
-		Value:      exception.Error(),
-		Type:       reflect.TypeOf(exception).String(),
+		Value:      cause.Error(),
+		Type:       reflect.TypeOf(cause).String(),
 		Stacktrace: stacktrace,
 	}}
 	return event
@@ -387,7 +406,9 @@ func (client *Client) prepareEvent(event *Event, hint *EventHint, scope EventMod
 		}},
 	}
 
-	event = scope.ApplyToEvent(event, hint)
+	if scope != nil {
+		event = scope.ApplyToEvent(event, hint)
+	}
 
 	for _, processor := range client.eventProcessors {
 		id := event.EventID

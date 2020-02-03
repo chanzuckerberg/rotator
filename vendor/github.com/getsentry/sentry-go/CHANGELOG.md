@@ -4,6 +4,50 @@
 
 - "I am running away from my responsibilities. And it feels good." – Michael Scott, Season 4, "Money"
 
+## v0.5.0
+
+- fix: Synchronize access to HTTPTransport.disabledUntil (#158)
+- docs: Update Flush documentation (#153)
+- fix: HTTPTransport.Flush panic and data race (#140)
+
+_NOTE:_
+This version changes the implementation of the default transport, modifying the
+behavior of `sentry.Flush`. The previous behavior was to wait until there were
+no buffered events; new concurrent events kept `Flush` from returning. The new
+behavior is to wait until the last event prior to the call to `Flush` has been
+sent or the timeout; new concurrent events have no effect. The new behavior is
+inline with the [Unified API
+Guidelines](https://docs.sentry.io/development/sdk-dev/unified-api/).
+
+We have updated the documentation and examples to clarify that `Flush` is meant
+to be called typically only once before program termination, to wait for
+in-flight events to be sent to Sentry. Calling `Flush` after every event is not
+recommended, as it introduces unnecessary latency to the surrounding function.
+Please verify the usage of `sentry.Flush` in your code base.
+
+## v0.4.0
+
+- fix(stacktrace): Correctly report package names (#127)
+- fix(stacktrace): Do not rely on AbsPath of files (#123)
+- build: Require github.com/ugorji/go@v1.1.7 (#110)
+- fix: Correctly store last event id (#99)
+- fix: Include request body in event payload (#94)
+- build: Reset go.mod version to 1.11 (#109)
+- fix: Eliminate data race in modules integration (#105)
+- feat: Add support for path prefixes in the DSN (#102)
+- feat: Add HTTPClient option (#86)
+- feat: Extract correct type and value from top-most error (#85)
+- feat: Check for broken pipe errors in Gin integration (#82)
+- fix: Client.CaptureMessage accept nil EventModifier (#72)
+
+## v0.3.1
+
+- feat: Send extra information exposed by the Go runtime (#76)
+- fix: Handle new lines in module integration (#65)
+- fix: Make sure that cache is locked when updating for contextifyFramesIntegration
+- ref: Update Iris integration and example to version 12
+- misc: Remove indirect dependencies in order to move them to separate go.mod files
+
 ## v0.3.0
 
 - feat: Retry event marshalling without contextual data if the first pass fails
@@ -36,7 +80,7 @@ It's not done through major version update, as we are still in `0.x` stage.
 - feat: Move frames context reading into `contextifyFramesIntegration` (#28)
 
 _NOTE:_
-In case of any performance isues due to source contexts IO, you can let us know and turn off the integration in the meantime with:
+In case of any performance issues due to source contexts IO, you can let us know and turn off the integration in the meantime with:
 
 ```go
 sentry.Init(sentry.ClientOptions{
