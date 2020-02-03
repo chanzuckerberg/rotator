@@ -203,6 +203,8 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			client := cziAws.New(sess).WithSecretsManager(sess.Config)
 
 			sinks = append(sinks, &sink.AwsSecretsManagerSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, Client: client})
+		case sink.KindStdout:
+			sinks = append(sinks, &sink.StdoutSink{BaseSink: sink.BaseSink{KeyToName: keyToName}})
 		default:
 			return nil, sink.ErrUnknownKind
 		}
@@ -279,6 +281,12 @@ func (secret Secret) MarshalYAML() (interface{}, error) {
 			"role_arn":    awsIamSrc.RoleArn,
 			"external_id": awsIamSrc.ExternalID,
 			"max_age":     awsIamSrc.MaxAge.String(),
+		}
+	case source.KindEnv:
+		envSource := secret.Source.(*source.Env)
+		secretFields["source"] = map[string]string{
+			"kind": string(source.KindEnv),
+			"name": envSource.Name,
 		}
 	default:
 		return nil, errors.New("Unrecognized source")

@@ -31,6 +31,7 @@ const (
 	KindTravisCi          Kind  = "TravisCI"
 	KindAwsParamStore     Kind  = "AWSParameterStore"
 	KindAwsSecretsManager Kind  = "AWSSecretsManager"
+	KindStdout            Kind  = "Stdout"
 	ErrUnknownKind        Error = "UnknownSink"
 )
 

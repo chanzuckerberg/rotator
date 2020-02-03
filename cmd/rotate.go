@@ -22,7 +22,7 @@ func init() {
 var rotateCmd = &cobra.Command{
 	Use:   "rotate",
 	Short: "Rotate secrets",
-	Long: `rotate parses a config file, rotates the secret at 
+	Long: `rotate parses a config file, rotates the secret at
 			the source, and writes the new secret to each sink`,
 	SilenceErrors: true, // If we don't silence here, cobra will print them. But we want to do that in cmd/root.go
 	RunE: func(cmd *cobra.Command, args []string) error {
