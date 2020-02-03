@@ -1,0 +1,10 @@
+version: 1
+secrets:
+  - name: test
+    source:
+      kind: env
+      name: TEST_ENV
+    sinks:
+      - kind: Stdout
+        key_to_name:
+          TEST_ENV: test_env

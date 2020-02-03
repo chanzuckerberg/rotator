@@ -1,6 +1,7 @@
 package sentry
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -23,7 +24,7 @@ const (
 	LevelFatal   Level = "fatal"
 )
 
-// https://docs.sentry.io/development/sdk-dev/interfaces/sdk/
+// https://docs.sentry.io/development/sdk-dev/event-payloads/sdk/
 type SdkInfo struct {
 	Name         string       `json:"name,omitempty"`
 	Version      string       `json:"version,omitempty"`
@@ -41,7 +42,7 @@ type SdkPackage struct {
 // plus it could just be `map[string]interface{}` then
 type BreadcrumbHint map[string]interface{}
 
-// https://docs.sentry.io/development/sdk-dev/interfaces/breadcrumbs/
+// https://docs.sentry.io/development/sdk-dev/event-payloads/breadcrumbs/
 type Breadcrumb struct {
 	Category  string                 `json:"category,omitempty"`
 	Data      map[string]interface{} `json:"data,omitempty"`
@@ -51,7 +52,7 @@ type Breadcrumb struct {
 	Type      string                 `json:"type,omitempty"`
 }
 
-// https://docs.sentry.io/development/sdk-dev/interfaces/user/
+// https://docs.sentry.io/development/sdk-dev/event-payloads/user/
 type User struct {
 	Email     string `json:"email,omitempty"`
 	ID        string `json:"id,omitempty"`
@@ -59,7 +60,7 @@ type User struct {
 	Username  string `json:"username,omitempty"`
 }
 
-// https://docs.sentry.io/development/sdk-dev/interfaces/http/
+// https://docs.sentry.io/development/sdk-dev/event-payloads/request/
 type Request struct {
 	URL         string            `json:"url,omitempty"`
 	Method      string            `json:"method,omitempty"`
@@ -101,19 +102,19 @@ func (r Request) FromHTTPRequest(request *http.Request) Request {
 	r.QueryString = request.URL.RawQuery
 
 	// Body
-	if request.GetBody != nil {
-		if bodyCopy, err := request.GetBody(); err == nil && bodyCopy != nil {
-			body, err := ioutil.ReadAll(bodyCopy)
-			if err == nil {
-				r.Data = string(body)
-			}
+	if request.Body != nil {
+		bodyBytes, err := ioutil.ReadAll(request.Body)
+		_ = request.Body.Close()
+		if err == nil {
+			// We have to restore original state of *request.Body
+			request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+			r.Data = string(bodyBytes)
 		}
 	}
-
 	return r
 }
 
-// https://docs.sentry.io/development/sdk-dev/interfaces/exception/
+// https://docs.sentry.io/development/sdk-dev/event-payloads/exception/
 type Exception struct {
 	Type          string      `json:"type,omitempty"`
 	Value         string      `json:"value,omitempty"`
@@ -124,7 +125,7 @@ type Exception struct {
 
 type EventID string
 
-// https://docs.sentry.io/development/sdk-dev/attributes/
+// https://docs.sentry.io/development/sdk-dev/event-payloads/
 type Event struct {
 	Breadcrumbs []*Breadcrumb          `json:"breadcrumbs,omitempty"`
 	Contexts    map[string]interface{} `json:"contexts,omitempty"`

@@ -46,7 +46,7 @@ type Dsn struct {
 	projectID int
 }
 
-// NewDsn creates an instance od `Dsn` by parsing provided url in a `string` format.
+// NewDsn creates an instance of `Dsn` by parsing provided url in a `string` format.
 // If Dsn is not set the client is effectively disabled.
 func NewDsn(rawURL string) (*Dsn, error) {
 	// Parse
@@ -149,6 +149,9 @@ func (dsn Dsn) StoreAPIURL() *url.URL {
 	if dsn.port != dsn.scheme.defaultPort() {
 		rawURL += fmt.Sprintf(":%d", dsn.port)
 	}
+	if dsn.path != "" {
+		rawURL += dsn.path
+	}
 	rawURL += fmt.Sprintf("/api/%d/store/", dsn.projectID)
 	parsedURL, _ := url.Parse(rawURL)
 	return parsedURL
@@ -156,8 +159,8 @@ func (dsn Dsn) StoreAPIURL() *url.URL {
 
 // RequestHeaders returns all the necessary headers that have to be used in the transport.
 func (dsn Dsn) RequestHeaders() map[string]string {
-	auth := fmt.Sprintf("Sentry sentry_version=%d, sentry_timestamp=%d, "+
-		"sentry_client=sentry.go/%s, sentry_key=%s", 7, time.Now().Unix(), Version, dsn.publicKey)
+	auth := fmt.Sprintf("Sentry sentry_version=%s, sentry_timestamp=%d, "+
+		"sentry_client=sentry.go/%s, sentry_key=%s", apiVersion, time.Now().Unix(), Version, dsn.publicKey)
 
 	if dsn.secretKey != "" {
 		auth = fmt.Sprintf("%s, sentry_secret=%s", auth, dsn.secretKey)
