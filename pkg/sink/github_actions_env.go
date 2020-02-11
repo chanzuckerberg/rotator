@@ -2,8 +2,8 @@ package sink
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 
 	"github.com/google/go-github/v29/github"
 	"github.com/pkg/errors"
@@ -15,15 +15,17 @@ const (
 	gitHubPubKeyLen = 32
 )
 
+// GitHubActionsSecretSink holds the configuration for a Github actions secret
 type GitHubActionsSecretSink struct {
 	BaseSink `yaml:",inline"`
 
-	owner string // github organization owner
-	repo  string // github repo
+	owner string `yaml:"owner"` // github organization owner
+	repo  string `yaml:"repo"`  // github repo
 
-	client *github.Client
+	client *github.Client `yaml:"client"`
 }
 
+// WithStaticTokenAuthClient configures a github client for this sink using an oauth token
 func (s *GitHubActionsSecretSink) WithStaticTokenAuthClient(token string, owner string, repo string) *GitHubActionsSecretSink {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
@@ -33,6 +35,7 @@ func (s *GitHubActionsSecretSink) WithStaticTokenAuthClient(token string, owner 
 	return s.WithClient(client, owner, repo)
 }
 
+// WithClient configures a github client for this sink
 func (s *GitHubActionsSecretSink) WithClient(client *github.Client, owner string, repo string) *GitHubActionsSecretSink {
 	s.client = client
 	s.owner = owner
@@ -41,12 +44,17 @@ func (s *GitHubActionsSecretSink) WithClient(client *github.Client, owner string
 	return s
 }
 
+// Write updates the value of the env var with the specified name
+// for the given repo.
 func (s *GitHubActionsSecretSink) Write(ctx context.Context, name string, value string) error {
 	f := func(ctx context.Context) error {
 
-		receiverPublicKey, _, err := s.client.Actions.GetPublicKey(ctx, s.owner, s.repo)
+		receiverPublicKey, resp, err := s.client.Actions.GetPublicKey(ctx, s.owner, s.repo)
 		if err != nil {
 			return errors.Wrapf(err, "could not fetch %s/%s public key", s.owner, s.repo)
+		}
+		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+			return errors.New(fmt.Sprintf("unable to get public key in Github for repo %s/%s: invalid http status: %s", s.owner, s.repo, resp.Status))
 		}
 
 		if receiverPublicKey.Key == nil || receiverPublicKey.KeyID == nil {
@@ -70,7 +78,7 @@ func (s *GitHubActionsSecretSink) Write(ctx context.Context, name string, value 
 			out,
 			[]byte(value),
 			&pubKeyBytes,
-			rand.Reader,
+			nil,
 		)
 		if err != nil {
 			return errors.Wrap(err, "error encrypted github secret")
@@ -82,18 +90,26 @@ func (s *GitHubActionsSecretSink) Write(ctx context.Context, name string, value 
 			EncryptedValue: base64.StdEncoding.EncodeToString(out),
 		}
 
-		_, err = s.client.Actions.CreateOrUpdateSecret(
+		resp, err = s.client.Actions.CreateOrUpdateSecret(
 			ctx,
 			s.owner,
 			s.repo,
 			encryptedSecret,
 		)
-		return errors.Wrap(err, "could not write encrypted secret to GitHub")
+		if err != nil {
+			return errors.Wrap(err, "could not write encrypted secret to GitHub")
+		}
+		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+			return errors.New(fmt.Sprintf("unable to create or update env var %s in Github for repo %s/%s: invalid http status: %s", encryptedSecret.Name, s.owner, s.repo, resp.Status))
+		}
+
+		return nil
 	}
 
 	return retry(ctx, defaultRetryAttempts, defaultRetrySleep, f)
 }
 
+// Kind returns the kind of this sink
 func (s *GitHubActionsSecretSink) Kind() Kind {
 	return KindGithubActionsSecret
 }
