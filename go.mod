@@ -7,6 +7,7 @@ require (
 	github.com/chanzuckerberg/go-misc v0.0.0-20191125152854-38391fa92cd1
 	github.com/fatih/color v1.9.0
 	github.com/getsentry/sentry-go v0.5.1
+	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c // indirect
@@ -21,8 +22,11 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.5.0
-	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6 // indirect
+	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6
+	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
 	golang.org/x/sys v0.0.0-20200217220822-9197077df867 // indirect
+	golang.org/x/tools v0.0.0-20191212203136-8facea2ecf42 // indirect
+	gonum.org/v1/gonum v0.0.0-20190802084026-e9a50d643359 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 )

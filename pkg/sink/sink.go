@@ -33,6 +33,7 @@ const (
 	KindAwsParamStore     Kind  = "AWSParameterStore"
 	KindAwsSecretsManager Kind  = "AWSSecretsManager"
 	KindStdout            Kind  = "Stdout"
+	KindGithubActions     Kind  = "GithubActions"
 	ErrUnknownKind        Error = "UnknownSink"
 )
 
@@ -82,6 +83,14 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 					"kind":        string(KindCircleCi),
 					"key_to_name": sink.KeyToName,
 					"account":     sink.Account,
+					"repo":        sink.Repo,
+				})
+		case KindGithubActions:
+			sink := s.(*GithubActionsSink)
+			yamlSinks = append(yamlSinks,
+				map[string]interface{}{
+					"key_to_name": sink.KeyToName,
+					"kind":        string(KindGithubActions),
 					"repo":        sink.Repo,
 				})
 		default:
