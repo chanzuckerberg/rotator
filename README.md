@@ -118,7 +118,7 @@ All sinks must have the following fields in addition to any sink-specific fields
 | account | The CircleCI account to write this env var to. | yes |
 | repo | The CircleCI repo to write this env var to. | yes |
 
-[`CIRCLECI_AUTH_TOKEN`](https://circleci.com/docs/2.0/managing-api-tokens/) should be set.
+[`CIRCLECI_AUTH_TOKEN`](https://circleci.com/docs/2.0/managing-api-tokens/) must be set.
 
 ### AWS Systems Manager Parameter Store (`AWSParameterStore`)
 | Name | Description | Required |
