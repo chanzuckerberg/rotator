@@ -13,6 +13,7 @@ import (
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
 	"github.com/hashicorp/go-multierror"
+	"github.com/jszwedko/go-circleci"
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
 	"github.com/sirupsen/logrus"
@@ -161,8 +162,17 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to authenticate travis API")
 			}
-
 			sinks = append(sinks, &sink.TravisCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, RepoSlug: sinkMapStr["repo_slug"], Client: client})
+
+		case sink.KindCircleCi:
+			if err = validate(sinkMapStr, "account", "repo"); err != nil {
+				return nil, errors.Wrap(err, "missing keys in circle CI sink config")
+			}
+			client := &circleci.Client{Token: os.Getenv("CIRCLECI_AUTH_TOKEN")}
+			sink := &sink.CircleCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}}
+			sink.WithCircleClient(client, sinkMapStr["account"], sinkMapStr["repo"])
+			sinks = append(sinks, sink)
+
 		case sink.KindAwsParamStore:
 			if err = validate(sinkMapStr, "role_arn", "region"); err != nil {
 				return nil, errors.Wrap(err, "missing keys in aws parameter store sink config")

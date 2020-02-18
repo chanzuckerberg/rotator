@@ -45,7 +45,7 @@ func (ts *TravisTestSuite) TearDownTest() {
 func (ts *TravisTestSuite) SetupTest() {
 	ts.ctx = context.Background()
 	ts.client, ts.mux, _, ts.teardown = setup()
-	t := ts.T()
+	t := ts.T().(*testing.T)
 
 	ts.mux.HandleFunc(fmt.Sprintf("/repo/%s/env_vars", testRepoSlug), func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
