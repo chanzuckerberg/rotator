@@ -35,7 +35,7 @@ func (sink *CircleCiSink) WithCircleClient(client *circleci.Client, account stri
 func (sink *CircleCiSink) Write(ctx context.Context, name string, val string) error {
 	f := func(ctx context.Context) error {
 		_, err := sink.Client.AddEnvVar(sink.Account, sink.Repo, name, val)
-		return errors.Wrapf(err, "could not write %s to %s/%s", name, sink.Repo, sink.Account)
+		return errors.Wrapf(err, "could not write %s to %s/%s", name, sink.Account, sink.Repo)
 	}
 	return retry(ctx, circleRetryAttempts, circleRetrySleep, f)
 }
