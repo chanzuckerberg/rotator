@@ -10,7 +10,6 @@ setup: # setup development dependencies
 	export GO111MODULE=on
 	GOFLAGS='' go get -u github.com/haya14busa/goverage
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
-	curl -L https://raw.githubusercontent.com/chanzuckerberg/bff/master/download.sh | sh
 	curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- v0.9.14
 .PHONY: setup
 
@@ -63,7 +62,7 @@ deps:
 .PHONY: deps
 
 release: ## run a release
-	./bin/bff bump
+	bff bump
 	git push
 	goreleaser release --rm-dist
 .PHONY: release
