@@ -29,6 +29,7 @@ func (e Error) Error() string { return string(e) }
 const (
 	KindBuf               Kind  = "Buffer"
 	KindTravisCi          Kind  = "TravisCI"
+	KindCircleCi                = "CircleCI"
 	KindAwsParamStore     Kind  = "AWSParameterStore"
 	KindAwsSecretsManager Kind  = "AWSSecretsManager"
 	KindStdout            Kind  = "Stdout"
@@ -73,6 +74,15 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 					"role_arn":    sink.RoleArn,
 					"external_id": sink.ExternalID,
 					"region":      sink.Region,
+				})
+		case KindCircleCi:
+			sink := s.(*CircleCiSink)
+			yamlSinks = append(yamlSinks,
+				map[string]interface{}{
+					"kind":        string(KindCircleCi),
+					"key_to_name": sink.KeyToName,
+					"account":     sink.Account,
+					"repo":        sink.Repo,
 				})
 		default:
 			return nil, ErrUnknownKind

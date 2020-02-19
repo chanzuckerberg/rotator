@@ -18,7 +18,7 @@ const (
 	travisRetrySleep    = time.Second
 )
 
-// TravisCiSink returns the
+// TravisCiSink is a travisCi sink
 type TravisCiSink struct {
 	BaseSink `yaml:",inline"`
 
@@ -70,7 +70,6 @@ func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) e
 		}
 		return nil
 	}
-
 	return retry(ctx, travisRetryAttempts, travisRetrySleep, f)
 }
 

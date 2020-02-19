@@ -13,10 +13,16 @@ import (
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
 	"github.com/hashicorp/go-multierror"
+	"github.com/jszwedko/go-circleci"
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+)
+
+const (
+	envCircleCIAuthToken = "CIRCLECI_AUTH_TOKEN"
+	envTravisCIAuthToken = "TRAVIS_API_AUTH_TOKEN"
 )
 
 type Config struct {
@@ -156,13 +162,29 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 
 			// set up Travis CI API client
 			client := travis.NewClient(sink.TravisBaseURL, "")
-			travisToken := os.Getenv("TRAVIS_API_AUTH_TOKEN")
+			travisToken, present := os.LookupEnv(envTravisCIAuthToken)
+			if !present {
+				return nil, errors.Errorf("missing env var: %s", envTravisCIAuthToken)
+			}
 			err := client.Authentication.UsingTravisToken(travisToken)
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to authenticate travis API")
 			}
-
 			sinks = append(sinks, &sink.TravisCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, RepoSlug: sinkMapStr["repo_slug"], Client: client})
+
+		case sink.KindCircleCi:
+			if err = validate(sinkMapStr, "account", "repo"); err != nil {
+				return nil, errors.Wrap(err, "missing keys in circle CI sink config")
+			}
+			circleToken, present := os.LookupEnv(envCircleCIAuthToken)
+			if !present {
+				return nil, errors.Errorf("missing env var: %s", envCircleCIAuthToken)
+			}
+			client := &circleci.Client{Token: circleToken}
+			sink := &sink.CircleCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}}
+			sink.WithCircleClient(client, sinkMapStr["account"], sinkMapStr["repo"])
+			sinks = append(sinks, sink)
+
 		case sink.KindAwsParamStore:
 			if err = validate(sinkMapStr, "role_arn", "region"); err != nil {
 				return nil, errors.Wrap(err, "missing keys in aws parameter store sink config")

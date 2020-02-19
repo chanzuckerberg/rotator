@@ -83,6 +83,8 @@ github.com/howeyc/gopass
 github.com/inconshreveable/mousetrap
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
+# github.com/jszwedko/go-circleci v0.3.0
+github.com/jszwedko/go-circleci
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/mattn/go-colorable v0.1.4
