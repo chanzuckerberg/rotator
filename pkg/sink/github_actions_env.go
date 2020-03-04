@@ -15,7 +15,7 @@ const (
 	gitHubPubKeyLen = 32
 )
 
-type GitHubActionsEnvSink struct {
+type GitHubActionsSecretSink struct {
 	BaseSink `yaml:",inline"`
 
 	owner string // github organization owner
@@ -24,7 +24,7 @@ type GitHubActionsEnvSink struct {
 	client *github.Client
 }
 
-func (s *GitHubActionsEnvSink) WithStaticTokenAuthClient(token string, owner string, repo string) *GitHubActionsEnvSink {
+func (s *GitHubActionsSecretSink) WithStaticTokenAuthClient(token string, owner string, repo string) *GitHubActionsSecretSink {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
@@ -33,7 +33,7 @@ func (s *GitHubActionsEnvSink) WithStaticTokenAuthClient(token string, owner str
 	return s.WithClient(client, owner, repo)
 }
 
-func (s *GitHubActionsEnvSink) WithClient(client *github.Client, owner string, repo string) *GitHubActionsEnvSink {
+func (s *GitHubActionsSecretSink) WithClient(client *github.Client, owner string, repo string) *GitHubActionsSecretSink {
 	s.client = client
 	s.owner = owner
 	s.repo = repo
@@ -41,7 +41,7 @@ func (s *GitHubActionsEnvSink) WithClient(client *github.Client, owner string, r
 	return s
 }
 
-func (s *GitHubActionsEnvSink) Write(ctx context.Context, name string, value string) error {
+func (s *GitHubActionsSecretSink) Write(ctx context.Context, name string, value string) error {
 	f := func(ctx context.Context) error {
 
 		receiverPublicKey, _, err := s.client.Actions.GetPublicKey(ctx, s.owner, s.repo)
@@ -94,6 +94,6 @@ func (s *GitHubActionsEnvSink) Write(ctx context.Context, name string, value str
 	return retry(ctx, defaultRetryAttempts, defaultRetrySleep, f)
 }
 
-func (s *GitHubActionsEnvSink) Kind() Kind {
-	return KindGithubActionsEnv
+func (s *GitHubActionsSecretSink) Kind() Kind {
+	return KindGithubActionsSecret
 }

@@ -27,13 +27,13 @@ type Error string
 func (e Error) Error() string { return string(e) }
 
 const (
-	KindBuf               Kind = "Buffer"
-	KindTravisCi          Kind = "TravisCI"
-	KindCircleCi          Kind = "CircleCI"
-	KindGithubActionsEnv  Kind = "GitHubActionsEnv"
-	KindAwsParamStore     Kind = "AWSParameterStore"
-	KindAwsSecretsManager Kind = "AWSSecretsManager"
-	KindStdout            Kind = "Stdout"
+	KindBuf                 Kind = "Buffer"
+	KindTravisCi            Kind = "TravisCI"
+	KindCircleCi            Kind = "CircleCI"
+	KindGithubActionsSecret Kind = "GitHubActionsSecret"
+	KindAwsParamStore       Kind = "AWSParameterStore"
+	KindAwsSecretsManager   Kind = "AWSSecretsManager"
+	KindStdout              Kind = "Stdout"
 )
 
 const (

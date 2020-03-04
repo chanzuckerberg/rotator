@@ -186,9 +186,9 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			sink.WithCircleClient(client, sinkMapStr["account"], sinkMapStr["repo"])
 			sinks = append(sinks, sink)
 
-		case sink.KindGithubActionsEnv:
+		case sink.KindGithubActionsSecret:
 			if err = validate(sinkMapStr, "owner", "repo"); err != nil {
-				return nil, errors.Wrapf(err, "missing keys in %s sink", sink.KindGithubActionsEnv)
+				return nil, errors.Wrapf(err, "missing keys in %s sink", sink.KindGithubActionsSecret)
 			}
 
 			githubToken, present := os.LookupEnv(envGitHubActionsAuthToken)
@@ -196,7 +196,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 				return nil, errors.Errorf("missing env var: %s", envGitHubActionsAuthToken)
 			}
 
-			sink := &sink.GitHubActionsEnvSink{
+			sink := &sink.GitHubActionsSecretSink{
 				BaseSink: sink.BaseSink{KeyToName: keyToName},
 			}
 			sink = sink.WithStaticTokenAuthClient(githubToken, sinkMapStr["owner"], sinkMapStr["repo"])
