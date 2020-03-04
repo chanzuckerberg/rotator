@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	defaultRetryAttempts = 5
+	defaultRetrySleep    = time.Second
+)
+
 func retry(ctx context.Context, attempts int, sleep time.Duration, f func(context.Context) error) error {
 	var err error
 	for i := 0; i < attempts; i++ {

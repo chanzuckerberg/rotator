@@ -3,7 +3,6 @@ package sink
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
@@ -12,9 +11,6 @@ import (
 const (
 	// TravisBaseURL is the base url for travisCI
 	TravisBaseURL string = travis.ApiComUrl
-
-	defaultRetryAttempts = 5
-	defaultRetrySleep    = time.Second
 )
 
 // TravisCiSink is a travisCi sink
