@@ -3,7 +3,6 @@ package sink
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/pkg/errors"
@@ -14,8 +13,8 @@ const (
 	// TravisBaseURL is the base url for travisCI
 	TravisBaseURL string = travis.ApiComUrl
 
-	travisRetryAttempts = 5
-	travisRetrySleep    = time.Second
+	defaultRetryAttempts = 5
+	defaultRetrySleep    = time.Second
 )
 
 // TravisCiSink is a travisCi sink
@@ -70,7 +69,7 @@ func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) e
 		}
 		return nil
 	}
-	return retry(ctx, travisRetryAttempts, travisRetrySleep, f)
+	return retry(ctx, defaultRetryAttempts, defaultRetrySleep, f)
 }
 
 func (sink *TravisCiSink) update(ctx context.Context, body *travis.EnvVarBody, envID string) error {
@@ -84,24 +83,10 @@ func (sink *TravisCiSink) update(ctx context.Context, body *travis.EnvVarBody, e
 		}
 		return nil
 	}
-	return retry(ctx, travisRetryAttempts, travisRetrySleep, f)
+	return retry(ctx, defaultRetryAttempts, defaultRetrySleep, f)
 }
 
 // Kind returns the kind of this sink
 func (sink *TravisCiSink) Kind() Kind {
 	return KindTravisCi
-}
-
-func retry(ctx context.Context, attempts int, sleep time.Duration, f func(context.Context) error) error {
-	var err error
-	for i := 0; i < attempts; i++ {
-		err = f(ctx)
-		if err == nil {
-			return nil
-		}
-
-		jitter := time.Duration(rand.Int63n(int64(sleep)))
-		time.Sleep(sleep + jitter)
-	}
-	return err
 }

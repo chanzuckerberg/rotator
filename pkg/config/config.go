@@ -21,8 +21,9 @@ import (
 )
 
 const (
-	envCircleCIAuthToken = "CIRCLECI_AUTH_TOKEN"
-	envTravisCIAuthToken = "TRAVIS_API_AUTH_TOKEN"
+	envCircleCIAuthToken      = "CIRCLECI_AUTH_TOKEN"
+	envTravisCIAuthToken      = "TRAVIS_API_AUTH_TOKEN"
+	envGitHubActionsAuthToken = "GITHUB_ACTIONS_AUTH_TOKEN"
 )
 
 type Config struct {
@@ -183,6 +184,23 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			client := &circleci.Client{Token: circleToken}
 			sink := &sink.CircleCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}}
 			sink.WithCircleClient(client, sinkMapStr["account"], sinkMapStr["repo"])
+			sinks = append(sinks, sink)
+
+		case sink.KindGithubActionsEnv:
+			if err = validate(sinkMapStr, "owner", "repo"); err != nil {
+				return nil, errors.Wrapf(err, "missing keys in %s sink", sink.KindGithubActionsEnv)
+			}
+
+			githubToken, present := os.LookupEnv(envGitHubActionsAuthToken)
+			if !present {
+				return nil, errors.Errorf("missing env var: %s", envGitHubActionsAuthToken)
+			}
+
+			sink := &sink.GitHubActionsEnvSink{
+				BaseSink: sink.BaseSink{KeyToName: keyToName},
+			}
+			sink = sink.WithStaticTokenAuthClient(githubToken, sinkMapStr["owner"], sinkMapStr["repo"])
+
 			sinks = append(sinks, sink)
 
 		case sink.KindAwsParamStore:
