@@ -88,6 +88,15 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 					"account":     sink.Account,
 					"repo":        sink.Repo,
 				})
+		case KindGithubActionsSecret:
+			sink := s.(*GitHubActionsSecretSink)
+			yamlSinks = append(yamlSinks,
+				map[string]interface{}{
+					"kind":        string(KindGithubActionsSecret),
+					"key_to_name": sink.KeyToName,
+					"repo":        sink.repo,
+					"owner":       sink.owner,
+				})
 		default:
 			return nil, ErrUnknownKind
 		}
