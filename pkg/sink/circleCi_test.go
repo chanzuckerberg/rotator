@@ -18,7 +18,6 @@ import (
 const (
 	circleAccount   = "testo_account"
 	circleRepo      = "testo_repo"
-	circleBadRepo   = "bad_testo_repo"
 	circleEnvVar    = "foo"
 	circleEnvVarVal = "bar"
 )
@@ -69,8 +68,7 @@ func (ts *CircleTestSuite) SetupTest() {
 				http.Error(w, "body doesn't match", http.StatusBadRequest)
 			}
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, want)
-			return
+			fmt.Fprint(w, want)
 		},
 	)
 }

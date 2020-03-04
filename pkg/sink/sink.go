@@ -27,13 +27,17 @@ type Error string
 func (e Error) Error() string { return string(e) }
 
 const (
-	KindBuf               Kind  = "Buffer"
-	KindTravisCi          Kind  = "TravisCI"
-	KindCircleCi                = "CircleCI"
-	KindAwsParamStore     Kind  = "AWSParameterStore"
-	KindAwsSecretsManager Kind  = "AWSSecretsManager"
-	KindStdout            Kind  = "Stdout"
-	ErrUnknownKind        Error = "UnknownSink"
+	KindBuf                 Kind = "Buffer"
+	KindTravisCi            Kind = "TravisCI"
+	KindCircleCi            Kind = "CircleCI"
+	KindGithubActionsSecret Kind = "GitHubActionsSecret"
+	KindAwsParamStore       Kind = "AWSParameterStore"
+	KindAwsSecretsManager   Kind = "AWSSecretsManager"
+	KindStdout              Kind = "Stdout"
+)
+
+const (
+	ErrUnknownKind Error = "UnknownSink"
 )
 
 type Sinks []Sink

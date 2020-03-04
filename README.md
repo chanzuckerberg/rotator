@@ -120,6 +120,14 @@ All sinks must have the following fields in addition to any sink-specific fields
 
 [`CIRCLECI_AUTH_TOKEN`](https://circleci.com/docs/2.0/managing-api-tokens/) must be set.
 
+### GitHub Actions Secret (`GitHubActionsSecret`)
+| Name | Description | Required |
+|------|-------------|:-----:|
+| owner | The GitHub repo owner to write this env var to. | yes |
+| repo | The GitHub repo to write this env var to. | yes |
+
+[`GITHUB_ACTIONS_AUTH_TOKEN`](https://developer.github.com/v3/actions/secrets/#list-secrets-for-a-repository) must be set.
+
 ### AWS Systems Manager Parameter Store (`AWSParameterStore`)
 | Name | Description | Required |
 |------|-------------|:-----:|

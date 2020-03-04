@@ -2,15 +2,9 @@ package sink
 
 import (
 	"context"
-	"time"
 
 	"github.com/jszwedko/go-circleci"
 	"github.com/pkg/errors"
-)
-
-const (
-	circleRetryAttempts = 5
-	circleRetrySleep    = time.Second
 )
 
 // CircleCiSink is a circleci sink
@@ -37,7 +31,7 @@ func (sink *CircleCiSink) Write(ctx context.Context, name string, val string) er
 		_, err := sink.Client.AddEnvVar(sink.Account, sink.Repo, name, val)
 		return errors.Wrapf(err, "could not write %s to %s/%s", name, sink.Account, sink.Repo)
 	}
-	return retry(ctx, circleRetryAttempts, circleRetrySleep, f)
+	return retry(ctx, defaultRetryAttempts, defaultRetrySleep, f)
 }
 
 // Kind returns the kind of this sink

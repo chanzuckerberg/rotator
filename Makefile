@@ -55,7 +55,6 @@ lint-all: ## run the fast go linters
 	golangci-lint run
 .PHONY: lint-all
 
-
 deps:
 	go mod tidy
 	go mod vendor
