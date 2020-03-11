@@ -246,7 +246,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 		case sink.KindStdout:
 			sinks = append(sinks, &sink.StdoutSink{BaseSink: sink.BaseSink{KeyToName: keyToName}})
 		default:
-			return nil, sink.ErrUnknownKind
+			return nil, fmt.Errorf("unknown sink kind: %s", sinkKind)
 		}
 	}
 	return sinks, nil

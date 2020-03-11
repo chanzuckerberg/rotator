@@ -1,6 +1,9 @@
 package sink
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 // Sink is the interface for all credential sinks.
 //
@@ -34,10 +37,6 @@ const (
 	KindAwsParamStore       Kind = "AWSParameterStore"
 	KindAwsSecretsManager   Kind = "AWSSecretsManager"
 	KindStdout              Kind = "Stdout"
-)
-
-const (
-	ErrUnknownKind Error = "UnknownSink"
 )
 
 type Sinks []Sink
@@ -98,7 +97,7 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 					"owner":       sink.owner,
 				})
 		default:
-			return nil, ErrUnknownKind
+			return nil, fmt.Errorf("unknown sink kind: %s", s.Kind())
 		}
 	}
 	return yamlSinks, nil
