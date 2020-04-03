@@ -25,10 +25,6 @@ type Sink interface {
 
 type Kind string
 
-type Error string
-
-func (e Error) Error() string { return string(e) }
-
 const (
 	KindBuf                 Kind = "Buffer"
 	KindTravisCi            Kind = "TravisCI"
