@@ -1,6 +1,6 @@
 module github.com/chanzuckerberg/rotator
 
-go 1.13
+go 1.14
 
 require (
 	github.com/aws/aws-sdk-go v1.29.16
@@ -10,7 +10,6 @@ require (
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-multierror v1.0.0
-	github.com/haya14busa/goverage v0.0.0-20180129164344-eec3514a20b5 // indirect
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c // indirect
 	github.com/jszwedko/go-circleci v0.3.0
 	github.com/pkg/errors v0.9.1
@@ -20,7 +19,7 @@ require (
 	github.com/spf13/cobra v0.0.6
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
+	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/tools v0.0.0-20200304143113-d6a4d55695f2 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 )
