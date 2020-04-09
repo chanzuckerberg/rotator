@@ -57,7 +57,6 @@ lint-all: ## run the fast go linters
 
 deps:
 	go mod tidy
-	go mod vendor
 .PHONY: deps
 
 release: ## run a release
