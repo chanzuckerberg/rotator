@@ -8,7 +8,6 @@ export GO111MODULE=on
 
 setup: # setup development dependencies
 	export GO111MODULE=on
-	GOFLAGS='' go get -u github.com/haya14busa/goverage
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 	curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- v0.9.14
 .PHONY: setup
@@ -26,12 +25,12 @@ test-all:
 .PHONY: test-all
 
 test-coverage:  ## run the test with proper coverage reporting
-	goverage  -coverprofile=coverage.out -covermode=atomic ./...
+	go test -coverprofile=coverage.out -covermode=atomic ./...
 	go tool cover -html=coverage.out
 .PHONY: test-coverage
 
 test-coverage-integration:  ## run the test with proper coverage reporting
-	goverage -coverprofile=coverage.out -covermode=atomic ./... -tags=integration
+	go test -coverprofile=coverage.out -covermode=atomic ./... -tags=integration
 	go tool cover -html=coverage.out
 .PHONY: test-coverage-all
 
@@ -57,7 +56,6 @@ lint-all: ## run the fast go linters
 
 deps:
 	go mod tidy
-	go mod vendor
 .PHONY: deps
 
 release: ## run a release
@@ -65,3 +63,16 @@ release: ## run a release
 	git push
 	goreleaser release --rm-dist
 .PHONY: release
+
+build: ## build the binary
+	go build .
+.PHONY: build
+
+release-prerelease: setup build ## release to github as a 'pre-release'
+	go build ${LDFLAGS} .
+	version=`./rotator version`; \
+	git tag v"$$version"; \
+	git push
+	git push --tags
+	goreleaser release -f .goreleaser.prerelease.yml --debug
+.PHONY: release-prerelease

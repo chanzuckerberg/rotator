@@ -8,8 +8,7 @@ archives:
   - files:
       - none*
 release:
-  prerelease: false
-
+  prerelease: true
 brews:
   - description: "Rotating credentials."
     github:
