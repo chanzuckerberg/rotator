@@ -20,5 +20,11 @@ dockers:
   - dockerfile: Dockerfile
     image_templates:
       - docker.pkg.github.com/chanzuckerberg/rotator/rotator:v{{.Version}}
+    extra_files:
+      - cmd
+      - go.mod
+      - go.sum
+      - main.go
+      - pkg
 env_files:
   github_token: ~/.config/goreleaser/github_token
