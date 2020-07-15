@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
+	"github.com/honeycombio/beeline-go"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -24,6 +26,11 @@ func Execute() {
 	} else if sentryEnabled {
 		defer sentry.Flush(time.Second * 5)
 		defer sentry.Recover()
+	}
+
+	err = configureHoneycombTelemetry()
+	if err != nil {
+		logrus.Warn(errors.Wrap(err, "Unable to set up Honeycomb Telemetry"))
 	}
 
 	if err := rootCmd.Execute(); err != nil {
@@ -52,4 +59,38 @@ func setUpSentry() (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+type HoneycombEnvironment struct {
+	SECRET_KEY   string
+	DATASET_NAME string `default:"rotator"`
+	SERVICE_NAME string `default:"rotator"`
+}
+
+func loadHoneycombEnv() (*HoneycombEnvironment, error) {
+	env := &HoneycombEnvironment{}
+	err := envconfig.Process("HONEYCOMB", env)
+	if err != nil {
+		return env, errors.Wrap(err, "Unable to load all the honeycomb environment variables")
+	}
+	return env, nil
+}
+
+func configureHoneycombTelemetry() error {
+	honeycombEnv, err := loadHoneycombEnv()
+	if err != nil {
+		return err
+	}
+	// if env var not set, ignore
+	if honeycombEnv.SECRET_KEY == "" {
+		logrus.Debug("Honeycomb Secret Key not set. Skipping Honeycomb Configuration")
+		return nil
+	}
+	beeline.Init(beeline.Config{
+		WriteKey:    honeycombEnv.SECRET_KEY,
+		Dataset:     honeycombEnv.DATASET_NAME,
+		ServiceName: honeycombEnv.SERVICE_NAME,
+	})
+
+	return nil
 }
