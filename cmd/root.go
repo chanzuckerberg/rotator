@@ -8,13 +8,39 @@ import (
 	"github.com/honeycombio/beeline-go"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+const (
+	flagVerbose = "verbose"
+)
+
+func init() {
+	rootCmd.PersistentFlags().BoolP(flagVerbose, "v", false, "Use this to enable verbose mode")
+}
 
 var rootCmd = &cobra.Command{
 	Use:          "rotator",
 	SilenceUsage: true,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// parse flags
+		verbose, err := cmd.Flags().GetBool(flagVerbose)
+		if err != nil {
+			return errors.Wrap(err, "Missing verbose flag")
+		}
+		if verbose {
+			log.SetLevel(log.DebugLevel)
+			log.SetReportCaller(true)
+		}
+
+		err = configureHoneycombTelemetry()
+		if err != nil {
+			return errors.Wrap(err, "Unable to set up Honeycomb Telemetry")
+		}
+
+		return nil
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -22,15 +48,10 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	sentryEnabled, err := setUpSentry()
 	if err != nil {
-		logrus.Warn(errors.Wrap(err, "unable to set up Sentry notifier"))
+		log.Warn(errors.Wrap(err, "unable to set up Sentry notifier"))
 	} else if sentryEnabled {
 		defer sentry.Flush(time.Second * 5)
 		defer sentry.Recover()
-	}
-
-	err = configureHoneycombTelemetry()
-	if err != nil {
-		logrus.Warn(errors.Wrap(err, "Unable to set up Honeycomb Telemetry"))
 	}
 
 	if err := rootCmd.Execute(); err != nil {
@@ -38,7 +59,7 @@ func Execute() {
 			sentry.CaptureException(err)
 			sentry.Flush(time.Second * 5)
 		}
-		logrus.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
@@ -83,7 +104,7 @@ func configureHoneycombTelemetry() error {
 	}
 	// if env var not set, ignore
 	if honeycombEnv.SECRET_KEY == "" {
-		logrus.Debug("Honeycomb Secret Key not set. Skipping Honeycomb Configuration")
+		log.Debug("Honeycomb Secret Key not set. Skipping Honeycomb Configuration")
 		return nil
 	}
 	beeline.Init(beeline.Config{
