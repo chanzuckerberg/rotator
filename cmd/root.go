@@ -41,6 +41,10 @@ var rootCmd = &cobra.Command{
 
 		return nil
 	},
+	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
+		beeline.Flush(cmd.Context())
+		return nil
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -112,6 +116,5 @@ func configureHoneycombTelemetry() error {
 		Dataset:     honeycombEnv.DATASET_NAME,
 		ServiceName: honeycombEnv.SERVICE_NAME,
 	})
-
 	return nil
 }
