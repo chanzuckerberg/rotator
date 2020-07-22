@@ -33,6 +33,7 @@ const (
 	KindAwsParamStore       Kind = "AWSParameterStore"
 	KindAwsSecretsManager   Kind = "AWSSecretsManager"
 	KindStdout              Kind = "Stdout"
+	KindHeroku              Kind = "Heroku"
 )
 
 type Sinks []Sink
@@ -88,6 +89,15 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 			yamlSinks = append(yamlSinks,
 				map[string]interface{}{
 					"kind":        string(KindGithubActionsSecret),
+					"key_to_name": sink.KeyToName,
+					"repo":        sink.repo,
+					"owner":       sink.owner,
+				})
+		case KindHeroku:
+			sink := s.(*HerokuSink)
+			yamlSinks = append(yamlSinks,
+				map[string]interface{}{
+					"kind":        string(KindHeroku),
 					"key_to_name": sink.KeyToName,
 					"repo":        sink.repo,
 					"owner":       sink.owner,
