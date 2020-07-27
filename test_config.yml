@@ -5,6 +5,6 @@ secrets:
       kind: env
       name: TEST_ENV
     sinks:
-      - kind: Stdout
+      - kind: Heroku
         key_to_name:
           TEST_ENV: test_env
