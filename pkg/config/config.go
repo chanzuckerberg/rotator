@@ -13,6 +13,7 @@ import (
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
 	"github.com/hashicorp/go-multierror"
+	heroku "github.com/heroku/heroku-go/v5"
 	"github.com/jszwedko/go-circleci"
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
@@ -246,7 +247,10 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 		case sink.KindStdout:
 			sinks = append(sinks, &sink.StdoutSink{BaseSink: sink.BaseSink{KeyToName: keyToName}})
 		case sink.KindHeroku:
-			sinks = append(sinks, &sink.HerokuSink{BaseSink: sink.BaseSink{KeyToName: keyToName}})
+			herokuClient := heroku.NewService(nil)
+			herokuSink := sink.HerokuSink{BaseSink: sink.BaseSink{KeyToName: keyToName}}
+			herokuSink.WithHerokuClient(herokuClient)
+			sinks = append(sinks, &herokuSink)
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", sinkKind)
 		}

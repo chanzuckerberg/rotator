@@ -99,8 +99,6 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 				map[string]interface{}{
 					"kind":        string(KindHeroku),
 					"key_to_name": sink.KeyToName,
-					"repo":        sink.repo,
-					"owner":       sink.owner,
 				})
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", s.Kind())

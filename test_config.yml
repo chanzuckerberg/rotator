@@ -8,3 +8,4 @@ secrets:
       - kind: Heroku
         key_to_name:
           TEST_ENV: test_env
+        AppIdentity: test-identity
