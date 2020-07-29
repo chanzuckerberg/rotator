@@ -28,12 +28,31 @@ func (sink *HerokuSink) Write(ctx context.Context, name string, val string) erro
 	if sink.Client == nil {
 		return errors.New("Heroku Client not set")
 	}
+	if sink.AppIdentity == "" {
+		return errors.New("Heroku AppIdentity not set")
+	}
+
+	configVars, err := sink.Client.ConfigVarInfoForApp(ctx, sink.AppIdentity)
+	if err != nil {
+		return errors.Wrap(err, "Unable to list Config vars")
+	}
+	fmt.Println("configVars:")
+	spew.Dump(configVars)
+
 	updateResult, err := sink.Client.ConfigVarUpdate(ctx, sink.AppIdentity, keypair)
 	if err != nil {
 		return errors.Wrapf(err, "Unable to update Config var with %s:%s", name, val)
 	}
 	fmt.Println("updateResult:")
 	spew.Dump(updateResult)
+
+	configVars, err = sink.Client.ConfigVarInfoForApp(ctx, sink.AppIdentity)
+	if err != nil {
+		return errors.Wrap(err, "Unable to list Config vars (pt. 2)")
+	}
+	fmt.Println("configVars (pt. 2):")
+	spew.Dump(configVars)
+
 	fmt.Printf("sink:Heroku: \n name: %s, val: %#v\n", name, val)
 	return nil
 }

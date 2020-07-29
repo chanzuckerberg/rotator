@@ -247,8 +247,18 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 		case sink.KindStdout:
 			sinks = append(sinks, &sink.StdoutSink{BaseSink: sink.BaseSink{KeyToName: keyToName}})
 		case sink.KindHeroku:
+			if err = validate(sinkMapStr, "AppIdentity"); err != nil {
+				return nil, errors.Wrap(err, "missing keys Heroku sink config")
+			}
+
 			herokuClient := heroku.NewService(nil)
-			herokuSink := sink.HerokuSink{BaseSink: sink.BaseSink{KeyToName: keyToName}}
+
+			// herokuClient.AddOnUpdate(ctx, sinkMapStr["AppIdentity"], addOnIdentity string, o heroku.AddOnUpdateOpts)
+
+			herokuSink := sink.HerokuSink{
+				BaseSink:    sink.BaseSink{KeyToName: keyToName},
+				AppIdentity: sinkMapStr["AppIdentity"],
+			}
 			herokuSink.WithHerokuClient(herokuClient)
 			sinks = append(sinks, &herokuSink)
 		default:
