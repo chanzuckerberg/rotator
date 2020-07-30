@@ -251,6 +251,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 				return nil, errors.Wrap(err, "missing keys Heroku sink config")
 			}
 
+			heroku.DefaultClient.Transport // try to set your bearer token here
 			herokuClient := heroku.NewService(nil)
 
 			// herokuClient.AddOnUpdate(ctx, sinkMapStr["AppIdentity"], addOnIdentity string, o heroku.AddOnUpdateOpts)
