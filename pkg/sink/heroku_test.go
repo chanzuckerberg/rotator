@@ -1,12 +1,11 @@
 package sink
 
 import (
-	"context"
+	"net/http/httptest"
 	"testing"
 
 	heroku "github.com/heroku/heroku-go/v5"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -14,29 +13,13 @@ const (
 	herokuEnvVarVal = "bar"
 )
 
-type HerokuTestSuite struct {
-	suite.Suite
+func TestHerokuSinkWrite(t *testing.T) {
+	r := require.New(t)
+	r.Nil(nil)
 
-	ctx    context.Context
-	client *heroku.Service
-}
+	testServer := httptest.NewServer(nil)
+	defer testServer.Close()
 
-func (hs *HerokuTestSuite) SetupTest() {
-	client := heroku.NewService(nil)
-
-	hs.ctx = context.Background()
-	hs.client = client
-}
-
-func (hs *HerokuTestSuite) TestWriteToHerokuSink() {
-	t := hs.T()
-	a := assert.New(t)
-	sink := &HerokuSink{}
-	sink.WithHerokuClient(hs.client)
-	err := sink.Write(hs.ctx, herokuEnvVar, herokuEnvVarVal)
-	a.NoError(err)
-}
-
-func TestHerokuSuite(t *testing.T) {
-	suite.Run(t, new(HerokuTestSuite))
+	hs := heroku.NewService(nil)
+	hs.URL = testServer.URL
 }
