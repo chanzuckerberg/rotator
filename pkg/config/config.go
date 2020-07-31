@@ -1,8 +1,10 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"time"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	heroku "github.com/heroku/heroku-go/v5"
 	"github.com/jszwedko/go-circleci"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
 	"github.com/sirupsen/logrus"
@@ -36,6 +39,19 @@ type Secret struct {
 	Name   string        `yaml:"name"`
 	Source source.Source `yaml:"source"`
 	Sinks  sink.Sinks    `yaml:"sinks"`
+}
+
+type HerokuEnv struct {
+	Bearer_Token string
+}
+
+func loadHerokuEnv() (*HerokuEnv, error) {
+	env := &HerokuEnv{}
+	err := envconfig.Process("heroku", env)
+	if err != nil {
+		return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
+	}
+	return env, nil
 }
 
 // parseIface converts an interface to the type map[string]string.
@@ -247,20 +263,39 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 		case sink.KindStdout:
 			sinks = append(sinks, &sink.StdoutSink{BaseSink: sink.BaseSink{KeyToName: keyToName}})
 		case sink.KindHeroku:
-			if err = validate(sinkMapStr, "AppIdentity"); err != nil {
-				return nil, errors.Wrap(err, "missing keys Heroku sink config")
+			herokuEnv, err := loadHerokuEnv()
+			if err != nil {
+				return nil, errors.Wrap(err, "Error loading Heroku Environment Variables")
 			}
+			if err = validate(sinkMapStr, "AppIdentity"); err != nil {
+				return nil, errors.Wrap(err, "missing AppIdentity in Heroku sink config")
+			}
+			headers := http.Header{}
+			headers.Set("Accept", "application/vnd.heroku+json; version=3")
+			transport := heroku.Transport{
+				BearerToken:       herokuEnv.Bearer_Token,
+				AdditionalHeaders: headers,
+				Debug:             true,
+			}
+			heroku.DefaultClient.Transport = &transport
 
-			heroku.DefaultClient.Transport // try to set your bearer token here
-			herokuClient := heroku.NewService(nil)
-
-			// herokuClient.AddOnUpdate(ctx, sinkMapStr["AppIdentity"], addOnIdentity string, o heroku.AddOnUpdateOpts)
+			herokuService := heroku.NewService(heroku.DefaultClient)
+			addons, err := herokuService.AddOnList(context.TODO(), &heroku.ListRange{Field: "name"})
+			if err != nil {
+				fmt.Println("got err")
+				fmt.Println(err)
+			}
+			for _, addon := range addons {
+				fmt.Println("got addon")
+				fmt.Println(addon.Name)
+			}
 
 			herokuSink := sink.HerokuSink{
 				BaseSink:    sink.BaseSink{KeyToName: keyToName},
 				AppIdentity: sinkMapStr["AppIdentity"],
 			}
-			herokuSink.WithHerokuClient(herokuClient)
+
+			herokuSink.WithHerokuClient(herokuService)
 			sinks = append(sinks, &herokuSink)
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", sinkKind)

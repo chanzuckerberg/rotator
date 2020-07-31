@@ -22,6 +22,7 @@ func (sink *HerokuSink) WithHerokuClient(client *heroku.Service) *HerokuSink {
 
 // Write writes the value of the env var with the specified name for the given repo
 func (sink *HerokuSink) Write(ctx context.Context, name string, val string) error {
+
 	keypair := map[string]*string{
 		name: &val,
 	}
