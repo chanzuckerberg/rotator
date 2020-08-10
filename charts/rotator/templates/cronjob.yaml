@@ -1,0 +1,89 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "rotator.fullname" . }}
+  labels:
+    {{- include "rotator.labels" . | nindent 4 }}
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 5
+  successfulJobsHistoryLimit: 5
+  schedule: 0 * * * *
+  jobTemplate:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "rotator.selectorLabels" . | nindent 8 }}
+    spec:
+      backoffLimit: 0
+      completions: 1
+      parallelism: 1
+      template:
+        spec:
+          containers:
+          - name: {{ .Chart.Name }}
+            {{- with .Values.securityContext }}
+            securityContext:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {{- with .Values.resources }}
+            resources:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            args:
+              - rotate
+              - -f
+              - /rotator/config/config.yaml
+              - -y
+            command:
+              - chamber
+              - exec
+              - si-prod-rotator
+              - --
+              - rotator
+            env:
+              - name: AWS_REGION
+                value: {{ .Values.awsRegion }}
+              - name: AWS_DEFAULT_REGION
+                value: {{ .Values.awsRegion }}
+            volumeMounts:
+              - mountPath: /rotator/config
+                mountPropagation: None
+                name: {{ .Chart.Name }}-configmap
+                readOnly: true
+          automountServiceAccountToken: true
+          restartPolicy: Never
+          serviceAccountName: {{ include "rotator.serviceAccountName" . }}
+          serviceAccount: {{ include "rotator.serviceAccountName" . }}
+          shareProcessNamespace: false
+          terminationGracePeriodSeconds: 30
+          {{- with .Values.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumes:
+          - name: {{ .Chart.Name }}-configmap
+            configMap:
+              defaultMode: 420
+              name: {{ .Chart.Name }}-configmap
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- with .Values.nodeSelector }}
+        nodeSelector:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.affinity }}
+        affinity:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.tolerations }}
+        tolerations:
+          {{- toYaml . | nindent 10 }}
+      {{- end }}
