@@ -4,6 +4,12 @@
 
 replicaCount: 1
 
+# Command to run inside the cron container.
+# Many environments may want to run this as
+# ["chamber", "exec", "rotatorService", "--", "rotator"]
+command:
+  - rotator
+
 image:
   repository: docker.pkg.github.com/chanzuckerberg/rotator/rotator
   pullPolicy: IfNotPresent

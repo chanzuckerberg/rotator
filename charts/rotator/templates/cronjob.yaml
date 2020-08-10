@@ -41,11 +41,7 @@ spec:
               - /rotator/config/config.yaml
               - -y
             command:
-              - chamber
-              - exec
-              - si-prod-rotator
-              - --
-              - rotator
+              {{- toYaml .Values.command | nindent 14 }}
             env:
               - name: AWS_REGION
                 value: {{ .Values.awsRegion }}
