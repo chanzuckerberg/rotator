@@ -14,6 +14,7 @@ require (
 	github.com/heroku/heroku-go/v5 v5.2.0
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c // indirect
 	github.com/jszwedko/go-circleci v0.3.0
+	github.com/julienschmidt/httprouter v1.2.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mattn/go-colorable v0.1.6 // indirect

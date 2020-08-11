@@ -9,13 +9,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-type HerokuSink struct {
-	BaseSink    `yaml:",inline"`
-	Client      *heroku.Service `yaml:"client"`
-	AppIdentity string          `yaml:"AppIdentity"`
+// type ConfigVarUpdateResult map[string]*string
+// type ConfigVarInfoForApp map[string]*string
+
+type HerokuServiceIface interface {
+	ConfigVarUpdate(ctx context.Context, appIdentity string, o map[string]*string) (heroku.ConfigVarUpdateResult, error)
+	ConfigVarInfoForApp(ctx context.Context, appIdentity string) (heroku.ConfigVarInfoForAppResult, error)
 }
 
-func (sink *HerokuSink) WithHerokuClient(client *heroku.Service) *HerokuSink {
+type HerokuSink struct {
+	BaseSink    `yaml:",inline"`
+	Client      HerokuServiceIface `yaml:"client"`
+	AppIdentity string             `yaml:"AppIdentity"`
+}
+
+func (sink *HerokuSink) WithHerokuClient(client HerokuServiceIface) *HerokuSink {
 	sink.Client = client
 	return sink
 }
