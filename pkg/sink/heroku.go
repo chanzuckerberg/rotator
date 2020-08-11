@@ -9,9 +9,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// type ConfigVarUpdateResult map[string]*string
-// type ConfigVarInfoForApp map[string]*string
-
 type HerokuServiceIface interface {
 	ConfigVarUpdate(ctx context.Context, appIdentity string, o map[string]*string) (heroku.ConfigVarUpdateResult, error)
 	ConfigVarInfoForApp(ctx context.Context, appIdentity string) (heroku.ConfigVarInfoForAppResult, error)
