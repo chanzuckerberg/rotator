@@ -4,9 +4,9 @@ git config --global user.name "GitHub Actions Bot"
 
 awk -i inplace 'BEGIN { FS = "." } ; { print $1 "." $2 "." ++$3 }' VERSION
 version=$(cat VERSION)
-sed -i "s/appVersion:.*/appVersion: v${version}/" charts/Chart.yaml
+sed -i "s/appVersion:.*/appVersion: v${version}/" charts/rotator/Chart.yaml
 
-git add VERSION charts/Chart.yaml
+git add VERSION charts/rotator/Chart.yaml
 git commit -m "release version ${version}"
 git tag v"${version}"
 

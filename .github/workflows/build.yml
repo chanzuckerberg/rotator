@@ -4,7 +4,7 @@ on:
       - VERSION
       - LICENSE
       - '**.md'
-      - charts/Chart.yaml
+      - charts/rotator/Chart.yaml
       - '.github/**'
 name: build
 jobs:
