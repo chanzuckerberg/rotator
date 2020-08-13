@@ -7,6 +7,9 @@
 # ["chamber", "exec", "rotatorService", "--", "rotator"]
 command:
   - rotator
+args: ["rotate", "-f", "/rotator/config/config.yaml", "-y"]
+envVars: []
+schedule: 0 * * * *
 
 image:
   repository: docker.pkg.github.com/chanzuckerberg/rotator/rotator
