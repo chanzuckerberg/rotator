@@ -9,6 +9,8 @@ command:
   - rotator
 args: ["rotate", "-f", "/rotator/config/config.yaml", "-y"]
 envVars: []
+
+# Rotator runs hourly by default.
 schedule: 0 * * * *
 
 image:
