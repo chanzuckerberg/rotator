@@ -8,7 +8,7 @@ spec:
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 5
   successfulJobsHistoryLimit: 5
-  schedule: 0 * * * *
+  schedule: {{ .Values.schedule }}
   jobTemplate:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -35,18 +35,20 @@ spec:
             resources:
               {{- toYaml . | nindent 14 }}
             {{- end }}
-            args:
-              - rotate
-              - -f
-              - /rotator/config/config.yaml
-              - -y
             command:
               {{- toYaml .Values.command | nindent 14 }}
+            {{- with .Values.args }}
+            args:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
             env:
               - name: AWS_REGION
                 value: {{ .Values.awsRegion }}
               - name: AWS_DEFAULT_REGION
                 value: {{ .Values.awsRegion }}
+            {{- with .Values.envVars }}
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
             volumeMounts:
               - mountPath: /rotator/config
                 mountPropagation: None
