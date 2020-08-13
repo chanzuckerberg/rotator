@@ -7,6 +7,7 @@ import (
 	"github.com/chanzuckerberg/rotator/pkg/config"
 	"github.com/fatih/color"
 	"github.com/hashicorp/go-multierror"
+	"github.com/honeycombio/beeline-go"
 	"github.com/pkg/errors"
 	"github.com/segmentio/go-prompt"
 	"github.com/sirupsen/logrus"
@@ -92,6 +93,9 @@ func getPrompt() bool {
 func RotateSecrets(config *config.Config) error {
 	var errs *multierror.Error
 	ctx := context.Background()
+	ctx, span := beeline.StartSpan(ctx, "rotateSecrets")
+	defer span.Send()
+
 	for _, secret := range config.Secrets {
 		// Rotate credential at source
 		src := secret.Source
