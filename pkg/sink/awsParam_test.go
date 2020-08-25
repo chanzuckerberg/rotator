@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
+	awsMocks "github.com/chanzuckerberg/go-misc/aws/mocks"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -27,8 +28,8 @@ type TestSuite struct {
 
 	// aws
 	awsClient          *cziAws.Client
-	mockSSM            *cziAws.MockSSMSvc
-	mockSecretsManager *cziAws.MockSecretsManagerSvc
+	mockSSM            *awsMocks.MockSSMAPI
+	mockSecretsManager *awsMocks.MockSecretsManagerAPI
 	sink               sink.Sink
 
 	// cleanup
@@ -46,7 +47,7 @@ func (ts *TestSuite) SetupTest() {
 	ts.server = server
 
 	ts.awsClient = cziAws.New(sess)
-	ts.awsClient, ts.mockSSM = ts.awsClient.WithMockSSM()
+	ts.awsClient, ts.mockSSM = ts.awsClient.WithMockSSM(ctrl)
 	ts.awsClient, ts.mockSecretsManager = ts.awsClient.WithMockSecretsManager()
 
 	// mock PutParameterWithContext
