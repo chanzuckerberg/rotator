@@ -26,7 +26,7 @@ type TestSuite struct {
 
 	// aws
 	awsClient *cziAws.Client
-	mockIAM   *cziAws.MockIAMSvc
+	mockIAM   *cziAws.IAM
 	src       *source.AwsIamSource
 
 	// cleanup
