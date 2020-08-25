@@ -69,7 +69,8 @@ func (ts *TestSuite) TestAwsIamRotateNoKey() {
 
 	// mock aws list access keys functionality
 	keys := &iam.ListAccessKeysOutput{}
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	// ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys
 	newKey, err := ts.src.RotateKeys(ts.ctx)
@@ -88,7 +89,7 @@ func (ts *TestSuite) TestAwsIamRotateOneKey() {
 	keys.SetAccessKeyMetadata([]*iam.AccessKeyMetadata{
 		key,
 	})
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys
 	newKey, err := ts.src.RotateKeys(ts.ctx)
@@ -113,7 +114,7 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysBothOlder() {
 		key1,
 		key2,
 	})
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys - a new key should be returned
 	newKey, err := ts.src.RotateKeys(ts.ctx)
@@ -143,7 +144,7 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysOneOlder() {
 		key1,
 		key2,
 	})
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys - no key should be createdd
 	newKey, err := ts.src.RotateKeys(ts.ctx)

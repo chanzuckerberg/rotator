@@ -10,6 +10,7 @@ import (
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
 	awsMocks "github.com/chanzuckerberg/go-misc/aws/mocks"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -46,9 +47,10 @@ func (ts *TestSuite) SetupTest() {
 	sess, server := cziAws.NewMockSession()
 	ts.server = server
 
+	controller := gomock.NewController(ts.T())
 	ts.awsClient = cziAws.New(sess)
-	ts.awsClient, ts.mockSSM = ts.awsClient.WithMockSSM(ctrl)
-	ts.awsClient, ts.mockSecretsManager = ts.awsClient.WithMockSecretsManager()
+	ts.awsClient, ts.mockSSM = ts.awsClient.WithMockSSM(controller)
+	ts.awsClient, ts.mockSecretsManager = ts.awsClient.WithMockSecretsManager(controller)
 
 	// mock PutParameterWithContext
 	out := &ssm.PutParameterOutput{}
