@@ -11,7 +11,6 @@ import (
 	awsMocks "github.com/chanzuckerberg/go-misc/aws/mocks"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -54,7 +53,7 @@ func (ts *TestSuite) SetupTest() {
 
 	// mock PutParameterWithContext
 	out := &ssm.PutParameterOutput{}
-	ts.mockSSM.On("PutParameterWithContext", mock.Anything).Return(out, nil)
+	ts.mockSSM.EXPECT().PutParameterWithContext(gomock.Any(), gomock.Any()).Return(out, nil)
 }
 
 func (ts *TestSuite) TestWriteToAwsParamSinkFakeParam() {
@@ -66,7 +65,7 @@ func (ts *TestSuite) TestWriteToAwsParamSinkFakeParam() {
 	in.SetName(fakeParName)
 	out := &ssm.GetParameterOutput{}
 	errNotFound := awserr.New(ssm.ErrCodeParameterNotFound, "", nil)
-	ts.mockSSM.On("GetParameterWithContext", in).Return(out, errNotFound)
+	ts.mockSSM.EXPECT().GetParameterWithContext(gomock.Any(), gomock.Eq(in)).Return(out, errNotFound)
 
 	// write secret to sink
 	ts.sink = &sink.AwsParamSink{Client: ts.awsClient}
@@ -85,7 +84,7 @@ func (ts *TestSuite) TestWriteToAwsParamSink() {
 	par.SetName(parName).SetValue(parValue)
 	out := &ssm.GetParameterOutput{}
 	out.SetParameter(par)
-	ts.mockSSM.On("GetParameterWithContext", in).Return(out, nil)
+	ts.mockSSM.EXPECT().GetParameterWithContext(gomock.Any(), gomock.Eq(in)).Return(out, nil)
 
 	// write secret to sink
 	ts.sink = &sink.AwsParamSink{Client: ts.awsClient}
