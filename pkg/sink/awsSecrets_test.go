@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,7 +27,7 @@ func (ts *TestSuite) TestWriteToAwsSecretsManagerSink() {
 	out := &secretsmanager.PutSecretValueOutput{
 		Name: aws.String(secretName),
 	}
-	ts.mockSecretsManager.On("PutSecretValueWithContext", in).Return(out, nil)
+	ts.mockSecretsManager.EXPECT().PutSecretValueWithContext(gomock.Any(), gomock.Eq(in)).Return(out, nil)
 
 	// write secret to sink
 	ts.sink = &sink.AwsSecretsManagerSink{Client: ts.awsClient}
@@ -45,7 +46,7 @@ func (ts *TestSuite) TestWriteToAwsSecretsManagerSinkFakeSecret() {
 	}
 	out := &secretsmanager.PutSecretValueOutput{}
 	errNotFound := awserr.New(secretsmanager.ErrCodeResourceNotFoundException, "", nil)
-	ts.mockSecretsManager.On("PutSecretValueWithContext", in).Return(out, errNotFound)
+	ts.mockSecretsManager.EXPECT().PutSecretValueWithContext(gomock.Any(), gomock.Eq(in)).Return(out, errNotFound)
 
 	// write non-existing secret to sink
 	ts.sink = &sink.AwsSecretsManagerSink{Client: ts.awsClient}
