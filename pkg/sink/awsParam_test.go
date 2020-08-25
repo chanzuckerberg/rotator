@@ -27,8 +27,8 @@ type TestSuite struct {
 
 	// aws
 	awsClient          *cziAws.Client
-	mockSSM            *cziAws.SSM
-	mockSecretsManager *cziAws.SecretsManager
+	mockSSM            *cziAws.MockSSMSvc
+	mockSecretsManager *cziAws.MockSecretsManagerSvc
 	sink               sink.Sink
 
 	// cleanup

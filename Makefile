@@ -55,7 +55,7 @@ lint-all: ## run the fast go linters
 .PHONY: lint-all
 
 deps:
-	go get -d ./...
+	go get -u ./...
 	go mod tidy
 .PHONY: deps
 
