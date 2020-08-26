@@ -266,6 +266,8 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			if err = validate(sinkMapStr, "AppIdentity"); err != nil {
 				return nil, errors.Wrap(err, "missing AppIdentity in Heroku sink config")
 			}
+
+			// Set up Heroku service
 			headers := http.Header{}
 			headers.Set("Accept", "application/vnd.heroku+json; version=3")
 			transport := heroku.Transport{
@@ -274,9 +276,9 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 				Debug:             true,
 			}
 			heroku.DefaultClient.Transport = &transport
-
 			herokuService := heroku.NewService(heroku.DefaultClient)
 
+			// Set up herokuSink
 			herokuSink := sink.HerokuSink{
 				BaseSink:    sink.BaseSink{KeyToName: keyToName},
 				AppIdentity: sinkMapStr["AppIdentity"],
@@ -284,6 +286,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			herokuSink.WithKeyToName(keyToName)
 			herokuSink.WithHerokuClient(herokuService)
 
+			// Add heroku sink to sinks
 			sinks = append(sinks, &herokuSink)
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", sinkKind)
