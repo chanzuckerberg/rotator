@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -155,6 +154,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 		return nil, errors.New("incorrect sinks format in secret config")
 	}
 	var sinks sink.Sinks
+
 	for _, i := range is {
 		// convert each interface to the type map[string]string and retrieve keyToName mapping
 		sinkMapStr, keyToName, err := parseIface(i)
@@ -276,22 +276,14 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			heroku.DefaultClient.Transport = &transport
 
 			herokuService := heroku.NewService(heroku.DefaultClient)
-			addons, err := herokuService.AddOnList(context.TODO(), &heroku.ListRange{Field: "name"})
-			if err != nil {
-				fmt.Println("got err")
-				fmt.Println(err)
-			}
-			for _, addon := range addons {
-				fmt.Println("got addon")
-				fmt.Println(addon.Name)
-			}
 
 			herokuSink := sink.HerokuSink{
 				BaseSink:    sink.BaseSink{KeyToName: keyToName},
 				AppIdentity: sinkMapStr["AppIdentity"],
 			}
-
+			herokuSink.WithKeyToName(keyToName)
 			herokuSink.WithHerokuClient(herokuService)
+
 			sinks = append(sinks, &herokuSink)
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", sinkKind)

@@ -28,6 +28,11 @@ func (sink *HerokuSink) GetKeyToName() map[string]string {
 	return sink.KeyToName
 }
 
+func (sink *HerokuSink) WithKeyToName(m map[string]string) *HerokuSink {
+	sink.BaseSink = BaseSink{KeyToName: m}
+	return sink
+}
+
 // Write writes the value of the env var with the specified name for the given repo
 func (sink *HerokuSink) Write(ctx context.Context, name string, val string) error {
 

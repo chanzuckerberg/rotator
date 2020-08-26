@@ -53,10 +53,10 @@ func TestHerokuSinkWrite(t *testing.T) {
 	r := require.New(t)
 	r.Nil(nil)
 
+	// set up mock Heroku router
 	router := mockTestRouter(context.TODO())
 	testServer := httptest.NewServer(router)
 	defer testServer.Close()
-
 	testHeader := http.Header{}
 	testHeader.Set("Accept", "application/vnd.heroku+json; version=3")
 	testTransport := heroku.Transport{
@@ -70,30 +70,39 @@ func TestHerokuSinkWrite(t *testing.T) {
 		URL:           testServer.URL,
 	}
 
+	// Insert the old secret into the Heroku service
+	oldSecret := "oldValue"
+	secretName := "test_env"
 	testSink := sink.HerokuSink{
 		AppIdentity: "testIdentity",
 		Client:      herokuService,
+		BaseSink: sink.BaseSink{
+			KeyToName: map[string]string{
+				"TEST_ENV": secretName,
+			},
+		},
 	}
 	r.NotNil(testSink.Client)
-
-	oldSecret := "oldValue"
 	testEnvVarMap := map[string]*string{
-		"testEnv": heroku.String(oldSecret),
+		secretName: heroku.String(oldSecret),
 	}
 	testSink.Client.ConfigVarUpdate(context.TODO(), "testIdentity", testEnvVarMap)
-
 	configVarUpdate, err := testSink.Client.ConfigVarInfoForApp(context.TODO(), testSink.AppIdentity)
 	r.NoError(err)
-	r.NotNil(configVarUpdate["testEnv"])
-	r.Equal(oldSecret, *configVarUpdate["testEnv"])
 
+	// Verify the old secret is in the heroku service's config vars
+	r.NotNil(configVarUpdate[secretName])
+	r.Equal(oldSecret, *configVarUpdate[secretName])
+
+	// Set the environment variables (with new secret value) needed for the test
 	NewSecret := "newValue"
 	defer util.ResetEnv(os.Environ())
 	err = os.Setenv("HEROKU_BEARER_TOKEN", NewSecret)
 	r.NoError(err)
-	err = os.Setenv("TEST_ENV", "test_env")
+	err = os.Setenv("TEST_ENV", NewSecret)
 	r.NoError(err)
 
+	// Rotate secrets
 	testHerokuSinkConfig := &config.Config{
 		Version: 0,
 		Secrets: []config.Secret{
@@ -108,13 +117,12 @@ func TestHerokuSinkWrite(t *testing.T) {
 			},
 		},
 	}
-
-	// run RotateSecrets() from cmd/rotate.go and see if the secret got rotated
 	RotateSecrets(testHerokuSinkConfig)
+
 	// check that the secret value is updated
 	configVarUpdate, err = testSink.Client.ConfigVarInfoForApp(context.TODO(), testSink.AppIdentity)
 	r.NoError(err)
 	r.NotNil(configVarUpdate)
-	r.NotNil(configVarUpdate["testEnv"])
-	r.Equal(NewSecret, *configVarUpdate["testEnv"])
+	r.NotNil(configVarUpdate[secretName])
+	r.Equal(NewSecret, *configVarUpdate[secretName])
 }
