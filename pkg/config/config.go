@@ -179,15 +179,11 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			}
 
 			// set up Travis CI API client
-			client := travis.NewClient(sink.TravisBaseURL, "")
 			travisToken, present := os.LookupEnv(envTravisCIAuthToken)
 			if !present {
 				return nil, errors.Errorf("missing env var: %s", envTravisCIAuthToken)
 			}
-			err := client.Authentication.UsingTravisToken(travisToken)
-			if err != nil {
-				return nil, errors.Wrap(err, "unable to authenticate travis API")
-			}
+			client := travis.NewClient(sink.TravisBaseURL, travisToken)
 			sinks = append(sinks, &sink.TravisCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, RepoSlug: sinkMapStr["repo_slug"], Client: client})
 
 		case sink.KindCircleCi:

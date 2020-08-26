@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
+	awsMocks "github.com/chanzuckerberg/go-misc/aws/mocks"
 	"github.com/chanzuckerberg/rotator/pkg/source"
-	"github.com/stretchr/testify/mock"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -26,11 +26,13 @@ type TestSuite struct {
 
 	// aws
 	awsClient *cziAws.Client
-	mockIAM   *cziAws.MockIAMSvc
+	mockIAM   *awsMocks.MockIAMAPI
 	src       *source.AwsIamSource
 
 	// cleanup
 	server *httptest.Server
+	//ctrl
+	ctrl *gomock.Controller
 }
 
 func (ts *TestSuite) TearDownTest() {
@@ -40,11 +42,13 @@ func (ts *TestSuite) TearDownTest() {
 func (ts *TestSuite) SetupTest() {
 	ts.ctx = context.Background()
 
+	ts.ctrl = gomock.NewController(ts.T())
+
 	sess, server := cziAws.NewMockSession()
 	ts.server = server
 
 	ts.awsClient = cziAws.New(sess)
-	ts.awsClient, ts.mockIAM = ts.awsClient.WithMockIAM()
+	ts.awsClient, ts.mockIAM = ts.awsClient.WithMockIAM(ts.ctrl)
 	ts.src = source.NewAwsIamSource().WithUserName(userName).WithAwsClient(ts.awsClient)
 
 	// mock aws request functionalities
@@ -53,10 +57,10 @@ func (ts *TestSuite) SetupTest() {
 	key.SetSecretAccessKey("newSecretAccessKey")
 	keyOut := &iam.CreateAccessKeyOutput{}
 	keyOut.SetAccessKey(key)
-	ts.mockIAM.On("CreateAccessKeyWithContext", mock.Anything).Return(keyOut, nil)
+	ts.mockIAM.EXPECT().CreateAccessKeyWithContext(gomock.Any(), gomock.Any()).Return(keyOut, nil)
 
 	delOut := &iam.DeleteAccessKeyOutput{}
-	ts.mockIAM.On("DeleteAccessKeyWithContext", mock.Anything).Return(delOut, nil)
+	ts.mockIAM.EXPECT().DeleteAccessKeyWithContext(gomock.Any(), gomock.Any()).Return(delOut, nil)
 }
 
 func (ts *TestSuite) TestAwsIamRotateNoKey() {
@@ -65,7 +69,7 @@ func (ts *TestSuite) TestAwsIamRotateNoKey() {
 
 	// mock aws list access keys functionality
 	keys := &iam.ListAccessKeysOutput{}
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys
 	newKey, err := ts.src.RotateKeys(ts.ctx)
@@ -84,7 +88,7 @@ func (ts *TestSuite) TestAwsIamRotateOneKey() {
 	keys.SetAccessKeyMetadata([]*iam.AccessKeyMetadata{
 		key,
 	})
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys
 	newKey, err := ts.src.RotateKeys(ts.ctx)
@@ -109,18 +113,12 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysBothOlder() {
 		key1,
 		key2,
 	})
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys - a new key should be returned
 	newKey, err := ts.src.RotateKeys(ts.ctx)
 	r.Nil(err)
 	r.NotNil(newKey)
-
-	// check that older key was deleted
-	ts.mockIAM.AssertCalled(t, "DeleteAccessKeyWithContext", &iam.DeleteAccessKeyInput{
-		AccessKeyId: aws.String(*key2.AccessKeyId),
-		UserName:    aws.String(userName),
-	})
 }
 
 func (ts *TestSuite) TestAwsIamRotateTwoKeysOneOlder() {
@@ -139,7 +137,7 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysOneOlder() {
 		key1,
 		key2,
 	})
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys - no key should be createdd
 	newKey, err := ts.src.RotateKeys(ts.ctx)
@@ -163,7 +161,7 @@ func (ts *TestSuite) TestAwsIamRotateTwoKeysNoneOlder() {
 		key1,
 		key2,
 	})
-	ts.mockIAM.On("ListAccessKeysWithContext", mock.Anything).Return(keys, nil)
+	ts.mockIAM.EXPECT().ListAccessKeysWithContext(gomock.Any(), gomock.Any()).Return(keys, nil)
 
 	// rotate keys - no key should be createdd
 	newKey, err := ts.src.RotateKeys(ts.ctx)

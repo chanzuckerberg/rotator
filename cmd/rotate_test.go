@@ -22,7 +22,7 @@ type authorizedHerokuClient struct {
 	URL           string
 }
 
-func (c *authorizedHerokuClient) ConfigVarUpdate(ctx context.Context, appIdentity string, o map[string]*string) (heroku.ConfigVarUpdateResult, error) {
+func (c authorizedHerokuClient) ConfigVarUpdate(ctx context.Context, appIdentity string, o map[string]*string) (heroku.ConfigVarUpdateResult, error) {
 	for k, v := range o {
 		c.configVarInfo[k] = v
 	}
@@ -30,7 +30,7 @@ func (c *authorizedHerokuClient) ConfigVarUpdate(ctx context.Context, appIdentit
 	return nil, nil
 }
 
-func (c *authorizedHerokuClient) ConfigVarInfoForApp(ctx context.Context, appIdentity string) (heroku.ConfigVarInfoForAppResult, error) {
+func (c authorizedHerokuClient) ConfigVarInfoForApp(ctx context.Context, appIdentity string) (heroku.ConfigVarInfoForAppResult, error) {
 	return c.configVarInfo, nil
 }
 
@@ -91,6 +91,8 @@ func TestHerokuSinkWrite(t *testing.T) {
 	defer util.ResetEnv(os.Environ())
 	err = os.Setenv("HEROKU_BEARER_TOKEN", NewSecret)
 	r.NoError(err)
+	err = os.Setenv("TEST_ENV", "test_env")
+	r.NoError(err)
 
 	testHerokuSinkConfig := &config.Config{
 		Version: 0,
@@ -101,7 +103,7 @@ func TestHerokuSinkWrite(t *testing.T) {
 					Name: "TEST_ENV",
 				},
 				Sinks: []sink.Sink{
-					testSink,
+					&testSink,
 				},
 			},
 		},
