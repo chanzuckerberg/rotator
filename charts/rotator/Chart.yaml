@@ -4,4 +4,4 @@ description: Credentials Rotator service
 website: https://github.com/chanzuckerberg/rotator
 type: application
 version: 0.1.0
-appVersion: v0.5.5
+appVersion: v0.5.6
