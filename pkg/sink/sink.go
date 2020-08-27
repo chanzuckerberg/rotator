@@ -106,3 +106,8 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 	}
 	return yamlSinks, nil
 }
+
+func (sink *BaseSink) WithKeyToName(m map[string]string) *BaseSink {
+	sink.KeyToName = m
+	return sink
+}

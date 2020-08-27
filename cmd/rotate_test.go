@@ -117,7 +117,8 @@ func TestHerokuSinkWrite(t *testing.T) {
 			},
 		},
 	}
-	RotateSecrets(testHerokuSinkConfig)
+	err = RotateSecrets(testHerokuSinkConfig)
+	r.NoError(err)
 
 	// check that the secret value is updated
 	configVarUpdate, err = testSink.Client.ConfigVarInfoForApp(context.TODO(), testSink.AppIdentity)

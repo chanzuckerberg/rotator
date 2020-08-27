@@ -2,10 +2,10 @@ package sink
 
 import (
 	"context"
-	"fmt"
 
 	heroku "github.com/heroku/heroku-go/v5"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type HerokuServiceIface interface {
@@ -24,19 +24,10 @@ func (sink *HerokuSink) WithHerokuClient(client HerokuServiceIface) *HerokuSink 
 	return sink
 }
 
-func (sink *HerokuSink) GetKeyToName() map[string]string {
-	return sink.KeyToName
-}
-
-func (sink *HerokuSink) WithKeyToName(m map[string]string) *HerokuSink {
-	sink.BaseSink = BaseSink{KeyToName: m}
-	return sink
-}
-
 // Write writes the value of the env var with the specified name for the given repo
 func (sink *HerokuSink) Write(ctx context.Context, name string, val string) error {
 
-	keypair := map[string]*string{
+	varUpdates := map[string]*string{
 		name: &val,
 	}
 	if sink.Client == nil {
@@ -46,12 +37,12 @@ func (sink *HerokuSink) Write(ctx context.Context, name string, val string) erro
 		return errors.New("Heroku AppIdentity not set")
 	}
 
-	_, err := sink.Client.ConfigVarUpdate(ctx, sink.AppIdentity, keypair)
+	_, err := sink.Client.ConfigVarUpdate(ctx, sink.AppIdentity, varUpdates)
 	if err != nil {
 		return errors.Wrapf(err, "Unable to update Config var with %s:%s", name, val)
 	}
 
-	fmt.Printf("sink:Heroku: \n name: %s, val: %#v\n", name, val)
+	logrus.Debugf("sink:Heroku: \n name: %s, val: %#v\n", name, val)
 	return nil
 }
 
