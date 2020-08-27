@@ -55,8 +55,10 @@ lint-all: ## run the fast go linters
 .PHONY: lint-all
 
 deps:
+	go get -u ./...
 	go mod tidy
 .PHONY: deps
+
 
 release: ## run a release
 	bff bump
@@ -76,3 +78,12 @@ release-prerelease: setup build ## release to github as a 'pre-release'
 	git push --tags
 	goreleaser release -f .goreleaser.prerelease.yml --debug
 .PHONY: release-prerelease
+
+check-mod:
+	go mod tidy
+	git diff --exit-code -- go.mod go.sum
+.PHONY: check-mod
+
+fmt:
+	goimports -w -d $$(find . -type f -name '*.go' -not -path "./vendor/*")
+.PHONY: fmt

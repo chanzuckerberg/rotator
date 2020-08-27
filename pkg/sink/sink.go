@@ -33,6 +33,7 @@ const (
 	KindAwsParamStore       Kind = "AWSParameterStore"
 	KindAwsSecretsManager   Kind = "AWSSecretsManager"
 	KindStdout              Kind = "Stdout"
+	KindHeroku              Kind = "Heroku"
 )
 
 type Sinks []Sink
@@ -92,9 +93,21 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 					"repo":        sink.repo,
 					"owner":       sink.owner,
 				})
+		case KindHeroku:
+			sink := s.(*HerokuSink)
+			yamlSinks = append(yamlSinks,
+				map[string]interface{}{
+					"kind":        string(KindHeroku),
+					"key_to_name": sink.KeyToName,
+				})
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", s.Kind())
 		}
 	}
 	return yamlSinks, nil
+}
+
+func (sink *BaseSink) WithKeyToName(m map[string]string) *BaseSink {
+	sink.KeyToName = m
+	return sink
 }

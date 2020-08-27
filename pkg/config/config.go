@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"time"
 
@@ -13,7 +14,9 @@ import (
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
 	"github.com/hashicorp/go-multierror"
+	heroku "github.com/heroku/heroku-go/v5"
 	"github.com/jszwedko/go-circleci"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	"github.com/shuheiktgw/go-travis"
 	"github.com/sirupsen/logrus"
@@ -35,6 +38,16 @@ type Secret struct {
 	Name   string        `yaml:"name"`
 	Source source.Source `yaml:"source"`
 	Sinks  sink.Sinks    `yaml:"sinks"`
+}
+
+type HerokuEnv struct {
+	Bearer_Token string
+}
+
+func loadHerokuEnv() (*HerokuEnv, error) {
+	env := &HerokuEnv{}
+	err := envconfig.Process("heroku", env)
+		return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
 }
 
 // parseIface converts an interface to the type map[string]string.
@@ -138,6 +151,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 		return nil, errors.New("incorrect sinks format in secret config")
 	}
 	var sinks sink.Sinks
+
 	for _, i := range is {
 		// convert each interface to the type map[string]string and retrieve keyToName mapping
 		sinkMapStr, keyToName, err := parseIface(i)
@@ -241,6 +255,35 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			sinks = append(sinks, &sink.AwsSecretsManagerSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, Client: client})
 		case sink.KindStdout:
 			sinks = append(sinks, &sink.StdoutSink{BaseSink: sink.BaseSink{KeyToName: keyToName}})
+		case sink.KindHeroku:
+			herokuEnv, err := loadHerokuEnv()
+			if err != nil {
+				return nil, errors.Wrap(err, "Error loading Heroku Environment Variables")
+			}
+			if err = validate(sinkMapStr, "AppIdentity"); err != nil {
+				return nil, errors.Wrap(err, "missing AppIdentity in Heroku sink config")
+			}
+
+			// Set up Heroku service
+			headers := http.Header{}
+			headers.Set("Accept", "application/vnd.heroku+json; version=3")
+			transport := heroku.Transport{
+				BearerToken:       herokuEnv.Bearer_Token,
+				AdditionalHeaders: headers,
+			}
+			heroku.DefaultClient.Transport = &transport
+			herokuService := heroku.NewService(heroku.DefaultClient)
+
+			// Set up herokuSink
+			herokuSink := sink.HerokuSink{
+				BaseSink:    sink.BaseSink{KeyToName: keyToName},
+				AppIdentity: sinkMapStr["AppIdentity"],
+			}
+			herokuSink.WithKeyToName(keyToName)
+			herokuSink.WithHerokuClient(herokuService)
+
+			// Add heroku sink to sinks
+			sinks = append(sinks, &herokuSink)
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", sinkKind)
 		}
