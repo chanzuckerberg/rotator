@@ -47,10 +47,7 @@ type HerokuEnv struct {
 func loadHerokuEnv() (*HerokuEnv, error) {
 	env := &HerokuEnv{}
 	err := envconfig.Process("heroku", env)
-	if err != nil {
 		return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
-	}
-	return env, nil
 }
 
 // parseIface converts an interface to the type map[string]string.
@@ -273,7 +270,6 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			transport := heroku.Transport{
 				BearerToken:       herokuEnv.Bearer_Token,
 				AdditionalHeaders: headers,
-				Debug:             true,
 			}
 			heroku.DefaultClient.Transport = &transport
 			herokuService := heroku.NewService(heroku.DefaultClient)
