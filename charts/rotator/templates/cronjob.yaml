@@ -52,7 +52,7 @@ spec:
             volumeMounts:
               - mountPath: /rotator/config
                 mountPropagation: None
-                name: {{ .Chart.Name }}-configmap
+                name: {{ .Chart.Name }}-config
                 readOnly: true
           automountServiceAccountToken: true
           restartPolicy: Never
@@ -65,10 +65,10 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumes:
-          - name: {{ .Chart.Name }}-configmap
+          - name: {{ .Chart.Name }}-config
             configMap:
               defaultMode: 420
-              name: {{ .Chart.Name }}-configmap
+              name: {{ .Chart.Name }}-config
           {{- with .Values.imagePullSecrets }}
           imagePullSecrets:
             {{- toYaml . | nindent 12 }}
