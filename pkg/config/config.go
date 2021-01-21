@@ -47,7 +47,7 @@ type HerokuEnv struct {
 func loadHerokuEnv() (*HerokuEnv, error) {
 	env := &HerokuEnv{}
 	err := envconfig.Process("heroku", env)
-		return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
+	return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
 }
 
 // parseIface converts an interface to the type map[string]string.
@@ -284,6 +284,17 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 
 			// Add heroku sink to sinks
 			sinks = append(sinks, &herokuSink)
+		case sink.KindSnowflake:
+			// load environment variables
+			// Set up connection to snowflake (and Databricks, run a command?)
+
+			snowflakeSink := sink.SnowflakeSink{
+				BaseSink: sink.BaseSink{
+					KeyToName: keyToName,
+				},
+			}
+
+			sinks = append(sinks, &snowflakeSink)
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", sinkKind)
 		}
