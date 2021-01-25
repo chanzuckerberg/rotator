@@ -34,7 +34,7 @@ const (
 	KindAwsSecretsManager   Kind = "AWSSecretsManager"
 	KindStdout              Kind = "Stdout"
 	KindHeroku              Kind = "Heroku"
-	KindSnowflake           Kind = "Snowflake"
+	KindDatabricks          Kind = "Databricks"
 )
 
 type Sinks []Sink
@@ -101,13 +101,13 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 					"kind":        string(KindHeroku),
 					"key_to_name": sink.KeyToName,
 				})
-		case KindSnowflake:
-			sink := s.(*SnowflakeSink)
+		case KindDatabricks:
+			sink := s.(*DatabricksSink)
 			yamlSinks = append(yamlSinks,
 				map[string]interface{}{
-					"kind": string(KindSnowflake),
+					"kind": string(KindDatabricks),
 					// TODO(aku): figure out what to put in this sink (like key_to_name)
-					"user": sink.user,
+					"user": sink.email,
 				})
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", s.Kind())

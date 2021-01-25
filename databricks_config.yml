@@ -5,7 +5,9 @@ secrets:
       kind: env
       name: TEST_ENV
     sinks:
-      - kind: Stdout
+      - kind: Databricks
         key_to_name:
           TEST_ENV: test_env
-          
+          email: test-email@domain.com
+          key_1: foo
+          key_2: bar

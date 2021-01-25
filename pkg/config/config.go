@@ -284,17 +284,17 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 
 			// Add heroku sink to sinks
 			sinks = append(sinks, &herokuSink)
-		case sink.KindSnowflake:
+		case sink.KindDatabricks:
 			// load environment variables
-			// Set up connection to snowflake (and Databricks, run a command?)
+			// Set up connection to databricks (and Databricks, run a command?)
 
-			snowflakeSink := sink.SnowflakeSink{
+			databricksSink := sink.DatabricksSink{
 				BaseSink: sink.BaseSink{
 					KeyToName: keyToName,
 				},
 			}
 
-			sinks = append(sinks, &snowflakeSink)
+			sinks = append(sinks, &databricksSink)
 		default:
 			return nil, fmt.Errorf("unknown sink kind: %s", sinkKind)
 		}
