@@ -4,16 +4,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/chanzuckerberg/go-misc/cmds"
 	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:          "rotator",
-	SilenceUsage: true,
-}
+var shortDescription = "Rotator is a tool for rotating credentials on a regular schedule."
+var longDescription = `Rotator reads a YAML configuration file with a secrets source and a list of destinations (sinks). `
+
+var rootCmd = cmds.Root("rotator", shortDescription, longDescription)
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
