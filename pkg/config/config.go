@@ -50,67 +50,81 @@ func loadHerokuEnv() (*HerokuEnv, error) {
 	return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
 }
 
-// parseIface converts an interface to the type map[string]string.
-// It also returns a second map[string]string if a "key_to_name" entry
+// parseKeyValueMaps converts an interface to the type map[string]string.
+func parseKeyValueMaps(iface interface{}) (keyToName map[string]string, err error) {
+	mapIface, ok := iface.(map[interface{}]interface{})
+	if !ok {
+		return nil, errors.New("key_to_name value should be a map")
+	}
+	keyToName = make(map[string]string)
+	for ktmKey, ktmVal := range mapIface {
+		ktmKeyStr, ok := ktmKey.(string)
+		if !ok {
+			return nil, errors.Errorf("key_to_name key should be a string. Got %T", ktmKey)
+		}
+		ktmValStr, ok := ktmVal.(string)
+		if !ok {
+			return nil, errors.Errorf("key_to_name val should be a string. Got %T", ktmVal)
+		}
+		keyToName[ktmKeyStr] = ktmValStr
+	}
+	return keyToName, nil
+}
+
+// parseInputMaps converts an interface to the type map[string]interface.
+// It also returns a map[string]string if a "key_to_name" entry
 // exists, or nil otherwise.
 // It returns any error encountered as a result of iface not being of
 // the correct type.
-func parseIface(iface interface{}) (mapStr map[string]string, keyToName map[string]string, err error) {
+func parseInputMaps(iface interface{}) (inputMap map[string]interface{}, keyToName map[string]string, err error) {
 	// first convert to map[interface{}]interface{}
 	mapIface, ok := iface.(map[interface{}]interface{})
 	if !ok {
 		return nil, nil, errors.New("interface is not a map")
 	}
+	inputMap = make(map[string]interface{})
 
-	// then convert to map[string]string
-	mapStr = make(map[string]string)
 	for k, v := range mapIface {
 		strK, ok := k.(string)
 		if !ok {
 			return nil, nil, errors.New("key is not a string")
 		}
 		switch strK {
+		// Enforce map[string]string for key_to_name values
 		case "key_to_name":
-			var m map[string]string
-			var err error
-			keyToName, m, err = parseIface(v)
+			keyToName, err = parseKeyValueMaps(v)
 			if err != nil {
-				return nil, nil, errors.Wrap(err, "incorrect key_to_name format")
+				return nil, nil, errors.Wrap(err, "Unable to parse key_to_name")
 			}
-			if m != nil {
-				return nil, nil, errors.New("incorrect key_to_name format")
-			}
+		// convert rest of the values to map[string]interface
 		default:
-			strV, ok := v.(string)
-			if !ok {
-				return nil, nil, errors.New("value is not a string")
-			}
-			mapStr[strK] = strV
+			inputMap[strK] = v
 		}
 	}
-	return mapStr, keyToName, nil
+	return inputMap, keyToName, nil
 }
 
 // unmarshalSource converts an interface to a type that implements
 // the source.Source interface.
 func unmarshalSource(srcIface interface{}) (source.Source, error) {
 	// convert srcIface to the type map[string]string
-	srcMapStr, _, err := parseIface(srcIface)
+	srcMap, _, err := parseInputMaps(srcIface)
 	if err != nil {
 		return nil, errors.Wrap(err, "incorrect source format in secret config")
 	}
 
 	// determine source kind
-	srcKind, ok := srcMapStr["kind"]
+	srcKind, ok := srcMap["kind"].(string)
 	if !ok {
 		return nil, errors.New("missing kind in source config")
 	}
+
 	var src source.Source
 	switch source.Kind(srcKind) {
 	case source.KindDummy:
 		src = &source.DummySource{}
 	case source.KindAws:
-		if err = validate(srcMapStr, "role_arn", "max_age"); err != nil {
+		if err = validate(srcMap, "role_arn", "max_age"); err != nil {
 			return nil, errors.Wrap(err, "missing keys in aws iam source config")
 		}
 
@@ -120,30 +134,30 @@ func unmarshalSource(srcIface interface{}) (source.Source, error) {
 			return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 		}
 		// create a Credentials object that wraps the AssumeRoleProvider, passing along the external ID if set
-		sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
-			if externalID, ok := srcMapStr["external_id"]; ok && externalID != "" {
+		sess.Config.Credentials = stscreds.NewCredentials(sess, srcMap["role_arn"].(string), func(p *stscreds.AssumeRoleProvider) {
+			if externalID, ok := srcMap["external_id"].(string); ok && externalID != "" {
 				p.ExternalID = &externalID
 			}
 		})
 		client := cziAws.New(sess).WithIAM(sess.Config)
 
 		// parse max age
-		maxAge, err := time.ParseDuration(srcMapStr["max_age"])
+		maxAge, err := time.ParseDuration(srcMap["max_age"].(string))
 		if err != nil {
 			return nil, errors.Wrap(err, "incorrect max_age format in aws iam source config")
 		}
-		src = source.NewAwsIamSource().WithUserName(srcMapStr["username"]).WithAwsClient(client).WithMaxAge(maxAge)
+		src = source.NewAwsIamSource().WithUserName(srcMap["username"].(string)).WithAwsClient(client).WithMaxAge(maxAge)
 	case source.KindEnv:
-		if err = validate(srcMapStr, "name"); err != nil {
+		if err = validate(srcMap, "name"); err != nil {
 			return nil, errors.Wrap(err, "missing keys in env source config")
 		}
-		src = source.NewEnvSource().WithName(srcMapStr["name"])
+		src = source.NewEnvSource().WithName(srcMap["name"].(string))
 	case source.KindSnowflake:
 		// TODO: Figure out what values to check for to validate KindSnowflake
-		if err = validate(srcMapStr, "emails"); err != nil {
+		if err = validate(srcMap, "emails"); err != nil {
 			return nil, errors.Wrap(err, "Missing email list in snowflake config")
 		}
-		src = source.NewSnowflakeSource().WithEmails(srcMapStr["emails"])
+		src = source.NewSnowflakeSource().WithEmails(srcMap["emails"].(string))
 	default:
 		return nil, source.ErrUnknownKind
 	}
@@ -160,16 +174,17 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 
 	for _, i := range is {
 		// convert each interface to the type map[string]string and retrieve keyToName mapping
-		sinkMapStr, keyToName, err := parseIface(i)
+		sinkMapStr, keyToName, err := parseInputMaps(i)
 		if err != nil {
 			return nil, errors.Wrap(err, "incorrect sink format in secret config")
 		}
+
 		if keyToName == nil {
 			return nil, errors.New("missing key_to_name in sink config")
 		}
 
 		// determine sink kind
-		sinkKind, ok := sinkMapStr["kind"]
+		sinkKind, ok := sinkMapStr["kind"].(string)
 		if !ok {
 			return nil, errors.New("missing kind in sink config")
 		}
@@ -187,7 +202,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 				return nil, errors.Errorf("missing env var: %s", envTravisCIAuthToken)
 			}
 			client := travis.NewClient(sink.TravisBaseURL, travisToken)
-			sinks = append(sinks, &sink.TravisCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, RepoSlug: sinkMapStr["repo_slug"], Client: client})
+			sinks = append(sinks, &sink.TravisCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}, RepoSlug: sinkMapStr["repo_slug"].(string), Client: client})
 
 		case sink.KindCircleCi:
 			if err = validate(sinkMapStr, "account", "repo"); err != nil {
@@ -199,7 +214,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			}
 			client := &circleci.Client{Token: circleToken}
 			sink := &sink.CircleCiSink{BaseSink: sink.BaseSink{KeyToName: keyToName}}
-			sink.WithCircleClient(client, sinkMapStr["account"], sinkMapStr["repo"])
+			sink.WithCircleClient(client, sinkMapStr["account"].(string), sinkMapStr["repo"].(string))
 			sinks = append(sinks, sink)
 
 		case sink.KindGithubActionsSecret:
@@ -215,7 +230,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			sink := &sink.GitHubActionsSecretSink{
 				BaseSink: sink.BaseSink{KeyToName: keyToName},
 			}
-			sink = sink.WithStaticTokenAuthClient(githubToken, sinkMapStr["owner"], sinkMapStr["repo"])
+			sink = sink.WithStaticTokenAuthClient(githubToken, sinkMapStr["owner"].(string), sinkMapStr["repo"].(string))
 
 			sinks = append(sinks, sink)
 
@@ -226,13 +241,13 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 
 			// create an AWS SSM client from a session
 			sess, err := session.NewSession(&aws.Config{
-				Region: aws.String(sinkMapStr["region"]), // SSM functions require region configuration
+				Region: aws.String(sinkMapStr["region"].(string)), // SSM functions require region configuration
 			})
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 			}
-			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
-				if externalID, ok := sinkMapStr["external_id"]; ok && externalID != "" {
+			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"].(string), func(p *stscreds.AssumeRoleProvider) {
+				if externalID, ok := sinkMapStr["external_id"].(string); ok && externalID != "" {
 					p.ExternalID = &externalID
 				}
 			})
@@ -246,13 +261,13 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 
 			// create an AWS Secrets Manager client from a session
 			sess, err := session.NewSession(&aws.Config{
-				Region: aws.String(sinkMapStr["region"]), // Secrets Manager functions require region configuration
+				Region: aws.String(sinkMapStr["region"].(string)), // Secrets Manager functions require region configuration
 			})
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 			}
-			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
-				if externalID, ok := sinkMapStr["external_id"]; ok && externalID != "" {
+			sess.Config.Credentials = stscreds.NewCredentials(sess, sinkMapStr["role_arn"].(string), func(p *stscreds.AssumeRoleProvider) {
+				if externalID, ok := sinkMapStr["external_id"].(string); ok && externalID != "" {
 					p.ExternalID = &externalID
 				}
 			})
@@ -283,7 +298,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 			// Set up herokuSink
 			herokuSink := sink.HerokuSink{
 				BaseSink:    sink.BaseSink{KeyToName: keyToName},
-				AppIdentity: sinkMapStr["AppIdentity"],
+				AppIdentity: sinkMapStr["AppIdentity"].(string),
 			}
 			herokuSink.WithKeyToName(keyToName)
 			herokuSink.WithHerokuClient(herokuService)
@@ -309,7 +324,7 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 }
 
 // validate returns an error if any key is not present in m
-func validate(m map[string]string, keys ...string) error {
+func validate(m map[string]interface{}, keys ...string) error {
 	var errs *multierror.Error
 	for _, k := range keys {
 		if _, ok := m[k]; !ok {
