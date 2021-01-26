@@ -50,6 +50,7 @@ func loadHerokuEnv() (*HerokuEnv, error) {
 	return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
 }
 
+// parseKeyValueMaps converts an interface to the type map[string]string.
 func parseKeyValueMaps(iface interface{}) (keyToName map[string]string, err error) {
 	mapIface, ok := iface.(map[interface{}]interface{})
 	if !ok {
@@ -83,18 +84,19 @@ func parseInputMaps(iface interface{}) (inputMap map[string]interface{}, keyToNa
 	}
 	inputMap = make(map[string]interface{})
 
-	// then convert to map[string]interface
 	for k, v := range mapIface {
 		strK, ok := k.(string)
 		if !ok {
 			return nil, nil, errors.New("key is not a string")
 		}
 		switch strK {
+		// Enforce map[string]string for key_to_name values
 		case "key_to_name":
 			keyToName, err = parseKeyValueMaps(v)
 			if err != nil {
 				return nil, nil, errors.Wrap(err, "Unable to parse key_to_name")
 			}
+		// convert rest of the values to map[string]interface
 		default:
 			inputMap[strK] = v
 		}
