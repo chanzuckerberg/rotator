@@ -50,47 +50,11 @@ func loadHerokuEnv() (*HerokuEnv, error) {
 	return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
 }
 
-// parseIface converts an interface to the type map[string]string.
-// It also returns a second map[string]string if a "key_to_name" entry
+// parseIface converts an interface to the type map[string]interface.
+// It also returns a map[string]string if a "key_to_name" entry
 // exists, or nil otherwise.
 // It returns any error encountered as a result of iface not being of
 // the correct type.
-func originalParseIface(iface interface{}) (mapStr map[string]string, keyToName map[string]string, err error) {
-	// first convert to map[interface{}]interface{}
-	mapIface, ok := iface.(map[interface{}]interface{})
-	if !ok {
-		return nil, nil, errors.New("interface is not a map")
-	}
-
-	// then convert to map[string]string
-	mapStr = make(map[string]string)
-	for k, v := range mapIface {
-		strK, ok := k.(string)
-		if !ok {
-			return nil, nil, errors.New("key is not a string")
-		}
-		switch strK {
-		case "key_to_name":
-			var m map[string]string
-			var err error
-			keyToName, m, err = originalParseIface(v)
-			if err != nil {
-				return nil, nil, errors.Wrap(err, "incorrect key_to_name format")
-			}
-			if m != nil {
-				return nil, nil, errors.New("incorrect key_to_name format")
-			}
-		default:
-			strV, ok := v.(string)
-			if !ok {
-				return nil, nil, errors.New("value is not a string")
-			}
-			mapStr[strK] = strV
-		}
-	}
-	return mapStr, keyToName, nil
-}
-
 func parseIface(iface interface{}) (mapStr map[string]interface{}, keyToName map[string]string, err error) {
 	// first convert to map[interface{}]interface{}
 	mapIface, ok := iface.(map[interface{}]interface{})
@@ -104,6 +68,10 @@ func parseIface(iface interface{}) (mapStr map[string]interface{}, keyToName map
 			return nil, nil, errors.New("key is not a string")
 		}
 		mapStr[strK] = v
+	}
+	keyToName, ok = mapStr["keyToName"].(map[string]string)
+	if !ok {
+		return mapStr, nil, nil
 	}
 	return mapStr, keyToName, nil
 }
