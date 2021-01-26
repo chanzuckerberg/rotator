@@ -10,9 +10,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	flagVerbose = "verbose"
+)
+
 var rootCmd = &cobra.Command{
 	Use:          "rotator",
 	SilenceUsage: true,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// parse flags
+		verbose, err := cmd.Flags().GetBool(flagVerbose)
+		if err != nil {
+			return errors.Wrap(err, "Missing verbose flag")
+		}
+		if verbose {
+			logrus.SetLevel(logrus.DebugLevel)
+			logrus.SetReportCaller(true) // add the calling method as a field
+		}
+
+		return nil
+	},
+}
+
+func init() {
+	rootCmd.PersistentFlags().BoolP(flagVerbose, "v", false, "Use this to enable verbose mode")
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
