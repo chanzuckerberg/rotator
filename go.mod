@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/aws/aws-sdk-go v1.34.10
 	github.com/chanzuckerberg/go-misc v0.0.0-20200825172639-f65f21d38b7c
+	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.9.0
 	github.com/getsentry/sentry-go v0.7.0
 	github.com/golang/mock v1.4.4
