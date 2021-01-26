@@ -21,9 +21,10 @@ type Error string
 func (e Error) Error() string { return string(e) }
 
 const (
-	KindDummy Kind = "dummy"
-	KindAws   Kind = "aws"
-	KindEnv   Kind = "env"
+	KindDummy     Kind = "dummy"
+	KindAws       Kind = "aws"
+	KindEnv       Kind = "env"
+	KindSnowflake Kind = "snowflake"
 )
 const (
 	ErrUnknownKind Error = "unknown source"

@@ -138,6 +138,12 @@ func unmarshalSource(srcIface interface{}) (source.Source, error) {
 			return nil, errors.Wrap(err, "missing keys in env source config")
 		}
 		src = source.NewEnvSource().WithName(srcMapStr["name"])
+	case source.KindSnowflake:
+		// TODO: Figure out what values to check for to validate KindSnowflake
+		if err = validate(srcMapStr, "emails"); err != nil {
+			return nil, errors.Wrap(err, "Missing email list in snowflake config")
+		}
+		src = source.NewSnowflakeSource().WithEmails(srcMapStr["emails"])
 	default:
 		return nil, source.ErrUnknownKind
 	}

@@ -2,12 +2,19 @@ version: 1
 secrets:
   - name: test
     source:
-      kind: env
-      name: TEST_ENV
+      kind: snowflake
+      emails: email1
+      account: accountVal
+      user: userVal
+      role: roleVal
+      schema: schemaVal
+      database: databaseVal
+      warehouse: warehouseVal
+      private_key_path: private_key_pathVal
+      private_key_password: private_key_passwordVal
     sinks:
       - kind: Databricks
         key_to_name:
-          TEST_ENV: test_env
           email: test-email@domain.com
           key_1: foo
           key_2: bar
