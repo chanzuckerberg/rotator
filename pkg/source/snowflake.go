@@ -81,12 +81,15 @@ func (src *SnowflakeSource) RotateKeys(ctx context.Context) (*keypair, error) {
 	// Authenticating into Snowflake
 	// https://github.com/chanzuckerberg/czi-di-databricks-utils/blob/b7c3e66d2b25cbd03ee8f8bf887aae61a57c0c1a/python/src/czi_datainfra/snowflake_utils.py#L22
 
+	placeholderPrivate := "foo"
+	placeholderPublic := "bar"
 	// list a user's access keys
 	newKeypair := keypair{
-		privateKey: nil,
-		publicKey:  nil,
+		privateKey: &placeholderPrivate,
+		publicKey:  &placeholderPublic,
 	}
-	return &newKeypair, errors.New("Snowflake RotateKeys() undefined")
+	// return &newKeypair, errors.New("Snowflake RotateKeys() undefined")
+	return &newKeypair, nil
 }
 
 func (src *SnowflakeSource) Read() (map[string]string, error) {
@@ -98,10 +101,12 @@ func (src *SnowflakeSource) Read() (map[string]string, error) {
 		return nil, nil
 	}
 	creds := map[string]string{
-		"publicKey":  *newKeypair.publicKey,
-		"privateKey": *newKeypair.privateKey,
+		"email":       src.Emails,
+		"public_key":  *newKeypair.publicKey,
+		"private_key": *newKeypair.privateKey,
 	}
-	return creds, errors.New("Snowflake Read() undefined")
+	// return creds, errors.New("Snowflake Read() undefined")
+	return creds, nil
 }
 
 func (src *SnowflakeSource) Kind() Kind {

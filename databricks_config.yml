@@ -15,6 +15,6 @@ secrets:
     sinks:
       - kind: Databricks
         key_to_name:
-          email: test-email@domain.com
-          key_1: foo
-          key_2: bar
+          email: emailVal
+          public_key: public_keyVal
+          private_key: private_keyVal
