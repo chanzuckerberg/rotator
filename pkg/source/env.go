@@ -35,12 +35,3 @@ func (e *Env) Read() (map[string]string, error) {
 
 	return map[string]string{e.Name: env}, nil
 }
-
-func (src *Env) MarshalYAML() (interface{}, error) {
-	yamlSource := make(map[string]interface{})
-	yamlSource["source"] = map[string]string{
-		"kind": string(KindEnv),
-		"name": src.Name,
-	}
-	return yamlSource, nil
-}

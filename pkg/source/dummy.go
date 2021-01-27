@@ -33,11 +33,3 @@ func (src *DummySource) Read() (map[string]string, error) {
 func (src *DummySource) Kind() Kind {
 	return KindDummy
 }
-
-func (src *DummySource) MarshalYAML() (interface{}, error) {
-	yamlSource := make(map[string]interface{})
-	yamlSource["source"] = map[string]string{
-		"kind": string(KindDummy),
-	}
-	return yamlSource, nil
-}

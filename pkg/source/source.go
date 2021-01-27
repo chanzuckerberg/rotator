@@ -14,7 +14,6 @@ import (
 type Source interface {
 	Read() (map[string]string, error)
 	Kind() Kind
-	MarshalYAML() (interface{}, error)
 }
 
 type Kind string
