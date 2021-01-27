@@ -44,7 +44,7 @@ func TestSingleStringPairs(t *testing.T) {
 		"TEST_ENV": "test_env",
 	})
 	testSource := source.NewEnvSource()
-	testSource.WithName("TEST_ENV")
+	testSource.WithName("blah")
 
 	c1 := &config.Config{Secrets: []config.Secret{
 		{
@@ -55,15 +55,11 @@ func TestSingleStringPairs(t *testing.T) {
 			},
 		},
 	}}
-	spew.Dump(c1.Secrets)
-	// fmt.Println(c1.Secrets[0].Sinks[0].Kind())
-	// fmt.Println(sink.Kind(c1.Secrets[0].Sinks[0].Kind()))
-	// Marshal (just single key-pair values)
+	spew.Dump(c1)
 	bytes, err := yaml.Marshal(c1)
 	r.Nil(err)
 	_, err = tmpFile.Write(bytes)
 	r.Nil(err)
-	// read file
 	c2, err := config.FromFile(tmpFile.Name())
 	r.Nil(err)
 

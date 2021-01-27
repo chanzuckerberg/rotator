@@ -13,6 +13,7 @@ import (
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-multierror"
 	heroku "github.com/heroku/heroku-go/v5"
 	"github.com/jszwedko/go-circleci"
@@ -365,7 +366,20 @@ func (secret Secret) MarshalYAML() (interface{}, error) {
 	secretFields["name"] = secret.Name
 
 	// marshal secret.Source
-	secretFields["source"] = secret.Source
+	// secretFields["source"] = secret.Source
+	switch secret.Source.Kind() {
+	case source.KindAws:
+		awsSink := secret.Source.(*source.AwsIamSource)
+		secretFields["source"] = awsSink
+	case source.KindDummy:
+		dummySink := secret.Source.(*source.DummySource)
+		secretFields["source"] = dummySink
+	case source.KindEnv:
+		envSink := secret.Source.(*source.Env)
+		secretFields["source"] = envSink
+	default:
+		return nil, errors.New("Unable to marshal Secret Source to YAML. Type unsupported.")
+	}
 
 	// marshal secret.Sinks
 	secretFields["sinks"] = secret.Sinks
@@ -380,5 +394,6 @@ func FromFile(file string) (*Config, error) {
 
 	conf := &Config{}
 	err = yaml.Unmarshal(b, conf)
+	spew.Dump(conf)
 	return conf, errors.Wrap(err, "Could not unmarshal config")
 }
