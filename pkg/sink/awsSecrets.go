@@ -17,6 +17,10 @@ type AwsSecretsManagerSink struct {
 	Client     *cziAws.Client `yaml:"client"`
 }
 
+func NewAwsSecretsManagerSink() *AwsSecretsManagerSink {
+	return &AwsSecretsManagerSink{}
+}
+
 func (sink *AwsSecretsManagerSink) Write(ctx context.Context, name string, val string) error {
 	svc := sink.Client.SecretsManager.Svc
 

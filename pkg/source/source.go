@@ -1,6 +1,8 @@
 package source
 
-import "time"
+import (
+	"time"
+)
 
 // Source is the interface for all credential sources.
 //
@@ -12,6 +14,7 @@ import "time"
 type Source interface {
 	Read() (map[string]string, error)
 	Kind() Kind
+	MarshalYAML() (interface{}, error)
 }
 
 type Kind string

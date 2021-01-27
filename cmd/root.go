@@ -4,37 +4,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/chanzuckerberg/go-misc/cmds"
 	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
-const (
-	flagVerbose = "verbose"
-)
+var shortDescription = "Rotator is a tool for rotating credentials on a regular schedule."
+var longDescription = `Rotator reads a YAML configuration file with a secrets source and a list of destinations (sinks). `
 
-var rootCmd = &cobra.Command{
-	Use:          "rotator",
-	SilenceUsage: true,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		// parse flags
-		verbose, err := cmd.Flags().GetBool(flagVerbose)
-		if err != nil {
-			return errors.Wrap(err, "Missing verbose flag")
-		}
-		if verbose {
-			logrus.SetLevel(logrus.DebugLevel)
-			logrus.SetReportCaller(true) // add the calling method as a field
-		}
-
-		return nil
-	},
-}
-
-func init() {
-	rootCmd.PersistentFlags().BoolP(flagVerbose, "v", false, "Use this to enable verbose mode")
-}
+var rootCmd = cmds.Root("rotator", shortDescription, longDescription)
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
