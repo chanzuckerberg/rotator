@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/chanzuckerberg/rotator/cmd"
 	"github.com/chanzuckerberg/rotator/pkg/config"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
@@ -93,23 +94,21 @@ func TestConfigWithLists(t *testing.T) {
 	r.Nil(err)
 	defer tmpFile.Close()
 	defer os.Remove(tmpFile.Name())
-
+	sink1 := sink.NewStdoutSink()
+	sink1.WithKeyToName() // TODO: figure out what map to put here
+	sink2 := sink.NewStdoutSink()
+	sink2.WithKeyToName() // TODO: figure out what map to put here
+	sinkList := sink.Sinks{}
 	c1 := &config.Config{Secrets: []config.Secret{
 		{
 			Name:   "listTest",
 			Source: &ListSource{},
+			Sinks:  sinkList,
 		},
 	}}
-	// Marshal (just single key-pair values)
-	bytes, err := yaml.Marshal(c1)
-	r.Nil(err)
-	_, err = tmpFile.Write(bytes)
-	r.Nil(err)
-	// read file
-	c2, err := config.FromFile(tmpFile.Name())
-	r.Nil(err)
-
-	r.Equal(c1, c2)
+	// See if rotating works
+	err = cmd.RotateSecrets(c1)
+	r.NoError(err)
 }
 
 // func TestConfigWithCustomStructs(t *testing.T) {
