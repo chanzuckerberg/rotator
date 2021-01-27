@@ -95,6 +95,7 @@ func parseIface(iface interface{}) (mapStr map[string]string, keyToName map[stri
 // unmarshalSource converts an interface to a type that implements
 // the source.Source interface.
 func unmarshalSource(srcIface interface{}) (source.Source, error) {
+
 	// convert srcIface to the type map[string]string
 	srcMapStr, _, err := parseIface(srcIface)
 	if err != nil {
@@ -345,6 +346,7 @@ func (secret *Secret) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (secret Secret) MarshalYAML() (interface{}, error) {
+
 	secretFields := make(map[string]interface{})
 
 	// marshal secret.Name
@@ -355,6 +357,8 @@ func (secret Secret) MarshalYAML() (interface{}, error) {
 
 	// marshal secret.Sinks
 	secretFields["sinks"] = secret.Sinks
+	fmt.Println("in MarshalYAML")
+	spew.Dump(secretFields)
 	return &secretFields, nil
 }
 
