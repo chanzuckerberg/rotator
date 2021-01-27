@@ -42,6 +42,13 @@ func (sinks Sinks) MarshalYAML() (interface{}, error) {
 	var yamlSinks []map[string]interface{}
 	for _, s := range sinks {
 		switch s.Kind() {
+		case KindStdout:
+			sink := s.(*StdoutSink)
+			yamlSinks = append(yamlSinks,
+				map[string]interface{}{
+					"key_to_name": sink.KeyToName,
+					"kind":        string(KindStdout),
+				})
 		case KindBuf:
 			sink := s.(*BufSink)
 			yamlSinks = append(yamlSinks,

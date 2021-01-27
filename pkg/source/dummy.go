@@ -15,6 +15,10 @@ const (
 	Secret string = "secret"
 )
 
+func NewDummySource() *DummySource {
+	return &DummySource{}
+}
+
 // Read returns a random number of length 16.
 func (src *DummySource) Read() (map[string]string, error) {
 	// reference: https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/
@@ -28,4 +32,10 @@ func (src *DummySource) Read() (map[string]string, error) {
 
 func (src *DummySource) Kind() Kind {
 	return KindDummy
+}
+
+func (src *DummySource) MarshalYAML() (interface{}, error) {
+	yamlSource := make(map[string]interface{})
+	yamlSource["source"] = map[string]string{"kind": string(KindDummy)}
+	return yamlSource, nil
 }

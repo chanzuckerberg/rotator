@@ -25,6 +25,10 @@ type GitHubActionsSecretSink struct {
 	client *github.Client `yaml:"client"`
 }
 
+func NewGitHubActionsSecretSink() *GitHubActionsSecretSink {
+	return &GitHubActionsSecretSink{}
+}
+
 // WithStaticTokenAuthClient configures a github client for this sink using an oauth token
 func (s *GitHubActionsSecretSink) WithStaticTokenAuthClient(token string, owner string, repo string) *GitHubActionsSecretSink {
 	ts := oauth2.StaticTokenSource(

@@ -18,6 +18,10 @@ type AwsParamSink struct {
 	Client     *cziAws.Client `yaml:"client"`
 }
 
+func NewAwsParamSink() *AwsParamSink {
+	return &AwsParamSink{}
+}
+
 // Write updates the value of the the parameter with the given name in the
 // underlying AWS Parameter Store.
 func (sink *AwsParamSink) Write(ctx context.Context, name string, val string) error {
