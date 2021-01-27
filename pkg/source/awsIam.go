@@ -98,7 +98,7 @@ func (src *AwsIamSource) RotateKeys(ctx context.Context) (*iam.AccessKey, error)
 	return result.AccessKey, errors.Wrap(err, "unable to create new access key")
 }
 
-func (src *AwsIamSource) Read() (map[string]string, error) {
+func (src *AwsIamSource) Read() (map[string]interface{}, error) {
 	newKey, err := src.RotateKeys(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to rotate keys")
@@ -106,10 +106,9 @@ func (src *AwsIamSource) Read() (map[string]string, error) {
 	if newKey == nil {
 		return nil, nil
 	}
-	creds := map[string]string{
-		AwsAccessKeyID:     *newKey.AccessKeyId,
-		AwsSecretAccessKey: *newKey.SecretAccessKey,
-	}
+	creds := make(map[string]interface{})
+	creds[AwsAccessKeyID] = *newKey.AccessKeyId
+	creds[AwsSecretAccessKey] = *newKey.SecretAccessKey
 	return creds, nil
 }
 

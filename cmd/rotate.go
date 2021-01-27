@@ -117,7 +117,12 @@ func RotateSecrets(config *config.Config) error {
 					errs = multierror.Append(errs, errors.New(fmt.Sprintf("%s: no name specified for credential with key %s for %s sink", secret.Name, k, sink.Kind())))
 					continue
 				}
-				err = sink.Write(ctx, name, v)
+				// TODO(aku): delete this block once Write() can take in interface values
+				vStr, ok := v.(string)
+				if !ok {
+					errs = multierror.Append(errs, errors.New(fmt.Sprintf("%s: sink value should be a string. Got %T", secret.Name, v)))
+				}
+				err = sink.Write(ctx, name, vStr)
 				if err != nil {
 					errs = multierror.Append(errors.Wrapf(err, "%s: unable to write secret to %s sink", secret.Name, sink.Kind()))
 					continue

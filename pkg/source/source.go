@@ -12,7 +12,7 @@ import (
 //
 // Kind returns the kind of sink.
 type Source interface {
-	Read() (map[string]string, error)
+	Read() (map[string]interface{}, error)
 	Kind() Kind
 }
 

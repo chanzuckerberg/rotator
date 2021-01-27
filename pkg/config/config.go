@@ -13,7 +13,6 @@ import (
 	cziAws "github.com/chanzuckerberg/go-misc/aws"
 	"github.com/chanzuckerberg/rotator/pkg/sink"
 	"github.com/chanzuckerberg/rotator/pkg/source"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-multierror"
 	heroku "github.com/heroku/heroku-go/v5"
 	"github.com/jszwedko/go-circleci"
@@ -400,6 +399,5 @@ func FromFile(file string) (*Config, error) {
 
 	conf := &Config{}
 	err = yaml.Unmarshal(b, conf)
-	spew.Dump(conf)
 	return conf, errors.Wrap(err, "Could not unmarshal config")
 }

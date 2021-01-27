@@ -26,12 +26,13 @@ func (e *Env) WithName(name string) *Env {
 	return e
 }
 
-func (e *Env) Read() (map[string]string, error) {
+func (e *Env) Read() (map[string]interface{}, error) {
 	env, present := os.LookupEnv(e.Name)
 
 	if !present {
 		return nil, fmt.Errorf("Environment variable %s not present", e.Name)
 	}
-
-	return map[string]string{e.Name: env}, nil
+	envPair := make(map[string]interface{})
+	envPair[e.Name] = env
+	return envPair, nil
 }
