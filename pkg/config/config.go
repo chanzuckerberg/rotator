@@ -95,15 +95,14 @@ func parseIface(iface interface{}) (mapStr map[string]string, keyToName map[stri
 // unmarshalSource converts an interface to a type that implements
 // the source.Source interface.
 func unmarshalSource(srcIface interface{}) (source.Source, error) {
-
 	// convert srcIface to the type map[string]string
-	srcMap, _, err := parseIface(srcIface)
+	srcMapStr, _, err := parseIface(srcIface)
 	if err != nil {
 		return nil, errors.Wrap(err, "incorrect source format in secret config")
 	}
 
 	// determine source kind
-	srcKind, ok := srcMap["kind"]
+	srcKind, ok := srcMapStr["kind"]
 	if !ok {
 		return nil, errors.New("missing kind in source config")
 	}
@@ -113,7 +112,7 @@ func unmarshalSource(srcIface interface{}) (source.Source, error) {
 	case source.KindDummy:
 		src = &source.DummySource{}
 	case source.KindAws:
-		if err = validate(srcMap, "role_arn", "max_age"); err != nil {
+		if err = validate(srcMapStr, "role_arn", "max_age"); err != nil {
 			return nil, errors.Wrap(err, "missing keys in aws iam source config")
 		}
 
@@ -123,24 +122,24 @@ func unmarshalSource(srcIface interface{}) (source.Source, error) {
 			return nil, errors.Wrap(err, "unable to set up aws session: make sure you have a shared credentials file or your environment variables set")
 		}
 		// create a Credentials object that wraps the AssumeRoleProvider, passing along the external ID if set
-		sess.Config.Credentials = stscreds.NewCredentials(sess, srcMap["role_arn"], func(p *stscreds.AssumeRoleProvider) {
-			if externalID, ok := srcMap["external_id"]; ok && externalID != "" {
+		sess.Config.Credentials = stscreds.NewCredentials(sess, srcMapStr["role_arn"], func(p *stscreds.AssumeRoleProvider) {
+			if externalID, ok := srcMapStr["external_id"]; ok && externalID != "" {
 				p.ExternalID = &externalID
 			}
 		})
 		client := cziAws.New(sess).WithIAM(sess.Config)
 
 		// parse max age
-		maxAge, err := time.ParseDuration(srcMap["max_age"])
+		maxAge, err := time.ParseDuration(srcMapStr["max_age"])
 		if err != nil {
 			return nil, errors.Wrap(err, "incorrect max_age format in aws iam source config")
 		}
-		src = source.NewAwsIamSource().WithUserName(srcMap["username"]).WithAwsClient(client).WithMaxAge(maxAge)
+		src = source.NewAwsIamSource().WithUserName(srcMapStr["username"]).WithAwsClient(client).WithMaxAge(maxAge)
 	case source.KindEnv:
-		if err = validate(srcMap, "name"); err != nil {
+		if err = validate(srcMapStr, "name"); err != nil {
 			return nil, errors.Wrap(err, "missing keys in env source config")
 		}
-		src = source.NewEnvSource().WithName(srcMap["name"])
+		src = source.NewEnvSource().WithName(srcMapStr["name"])
 	default:
 		return nil, source.ErrUnknownKind
 	}
@@ -161,7 +160,6 @@ func unmarshalSinks(sinksIface interface{}) (sink.Sinks, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "incorrect sink format in secret config")
 		}
-
 		if keyToName == nil {
 			return nil, errors.New("missing key_to_name in sink config")
 		}
@@ -348,7 +346,6 @@ func (secret *Secret) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (secret Secret) MarshalYAML() (interface{}, error) {
-
 	secretFields := make(map[string]interface{})
 
 	// marshal secret.Name
