@@ -366,8 +366,7 @@ func (secret Secret) MarshalYAML() (interface{}, error) {
 	secretFields["name"] = secret.Name
 
 	// marshal secret.Source
-	// secretFields["source"] = secret.Source
-	switch secret.Source.Kind() {
+ 	switch secret.Source.Kind() {
 	case source.KindAws:
 		awsSink := secret.Source.(*source.AwsIamSource)
 		secretFields["source"] = awsSink
