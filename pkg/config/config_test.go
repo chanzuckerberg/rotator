@@ -62,6 +62,11 @@ func TestSingleStringPairs(t *testing.T) {
 	spew.Dump(c1)
 	bytes, err := yaml.Marshal(c1)
 	r.Nil(err)
+	r.NotNil(bytes)
+	asldkfj := &config.Config{}
+	err = yaml.Unmarshal(bytes, asldkfj)
+	r.NoError(err)
+	spew.Dump(asldkfj)
 	_, err = tmpFile.Write(bytes)
 	r.Nil(err)
 	c2, err := config.FromFile(tmpFile.Name())
