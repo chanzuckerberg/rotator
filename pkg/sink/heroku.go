@@ -19,6 +19,10 @@ type HerokuSink struct {
 	AppIdentity string             `yaml:"AppIdentity"`
 }
 
+func NewHerokuSink() *HerokuSink {
+	return &HerokuSink{}
+}
+
 func (sink *HerokuSink) WithHerokuClient(client HerokuServiceIface) *HerokuSink {
 	sink.Client = client
 	return sink

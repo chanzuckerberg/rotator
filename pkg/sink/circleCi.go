@@ -16,6 +16,10 @@ type CircleCiSink struct {
 	Repo    string
 }
 
+func NewCircleCiSink() *CircleCiSink {
+	return &CircleCiSink{}
+}
+
 // WithCircleClient configures a circleci client for this sink
 func (sink *CircleCiSink) WithCircleClient(client *circleci.Client, account string, repo string) *CircleCiSink {
 	sink.Client = client

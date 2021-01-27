@@ -21,6 +21,10 @@ type TravisCiSink struct {
 	Client   *travis.Client `yaml:"client"`
 }
 
+func NewTravisCiSink() *TravisCiSink {
+	return &TravisCiSink{}
+}
+
 // WithTravisClient configures a travisCI client for this sink
 func (sink *TravisCiSink) WithTravisClient(client *travis.Client) *TravisCiSink {
 	sink.Client = client

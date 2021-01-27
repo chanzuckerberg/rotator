@@ -47,7 +47,7 @@ type HerokuEnv struct {
 func loadHerokuEnv() (*HerokuEnv, error) {
 	env := &HerokuEnv{}
 	err := envconfig.Process("heroku", env)
-		return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
+	return env, errors.Wrap(err, "Unable to load all the heroku environment variables")
 }
 
 // parseIface converts an interface to the type map[string]string.
@@ -350,26 +350,27 @@ func (secret Secret) MarshalYAML() (interface{}, error) {
 	secretFields["name"] = secret.Name
 
 	// marshal secret.Source
-	switch secret.Source.Kind() {
-	case source.KindDummy:
-		secretFields["source"] = map[string]string{"kind": string(source.KindDummy)}
-	case source.KindAws:
-		awsIamSrc := secret.Source.(*source.AwsIamSource)
-		secretFields["source"] = map[string]string{"kind": string(source.KindAws),
-			"username":    awsIamSrc.UserName,
-			"role_arn":    awsIamSrc.RoleArn,
-			"external_id": awsIamSrc.ExternalID,
-			"max_age":     awsIamSrc.MaxAge.String(),
-		}
-	case source.KindEnv:
-		envSource := secret.Source.(*source.Env)
-		secretFields["source"] = map[string]string{
-			"kind": string(source.KindEnv),
-			"name": envSource.Name,
-		}
-	default:
-		return nil, errors.New("Unrecognized source")
-	}
+	// switch secret.Source.Kind() {
+	// case source.KindDummy:
+	// 	secretFields["source"] = map[string]string{"kind": string(source.KindDummy)}
+	// case source.KindAws:
+	// 	awsIamSrc := secret.Source.(*source.AwsIamSource)
+	// 	secretFields["source"] = map[string]string{"kind": string(source.KindAws),
+	// 		"username":    awsIamSrc.UserName,
+	// 		"role_arn":    awsIamSrc.RoleArn,
+	// 		"external_id": awsIamSrc.ExternalID,
+	// 		"max_age":     awsIamSrc.MaxAge.String(),
+	// 	}
+	// case source.KindEnv:
+	// 	envSource := secret.Source.(*source.Env)
+	// 	secretFields["source"] = map[string]string{
+	// 		"kind": string(source.KindEnv),
+	// 		"name": envSource.Name,
+	// 	}
+	// default:
+	// 	return nil, errors.New("Unrecognized source")
+	// }
+	secretFields["source"] = secret.Source
 
 	// marshal secret.Sinks
 	secretFields["sinks"] = secret.Sinks
