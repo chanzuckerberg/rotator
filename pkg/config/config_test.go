@@ -75,6 +75,11 @@ type ListSource struct {
 }
 
 // Define Read function
+func (listSrc *ListSource) Read() (map[string]interface{}, error) {
+	dummyIface := make(map[string]interface{})
+	dummyIface[source.Secret] = []string{"item1", "item2", "item3"}
+	return dummyIface, nil
+}
 
 // Kind returns the kind of this source
 func (listSrc *ListSource) Kind() source.Kind {
@@ -90,7 +95,10 @@ func TestConfigWithLists(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 
 	c1 := &config.Config{Secrets: []config.Secret{
-		// add content here
+		{
+			Name:   "listTest",
+			Source: &ListSource{},
+		},
 	}}
 	// Marshal (just single key-pair values)
 	bytes, err := yaml.Marshal(c1)
