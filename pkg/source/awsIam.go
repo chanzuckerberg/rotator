@@ -116,15 +116,3 @@ func (src *AwsIamSource) Read() (map[string]string, error) {
 func (src *AwsIamSource) Kind() Kind {
 	return KindAws
 }
-
-func (src *AwsIamSource) MarshalYAML() (interface{}, error) {
-	yamlSource := make(map[string]interface{})
-	yamlSource["source"] = map[string]string{
-		"kind":        string(KindAws),
-		"username":    src.UserName,
-		"role_arn":    src.RoleArn,
-		"external_id": src.ExternalID,
-		"max_age":     src.MaxAge.String(),
-	}
-	return yamlSource, nil
-}
