@@ -43,25 +43,30 @@ func TestSingleStringPairs(t *testing.T) {
 	testSink.WithKeyToName(map[string]string{
 		"TEST_ENV": "test_env",
 	})
+
 	testSource := source.NewEnvSource()
 	testSource.WithName("blah")
 
-	c1 := &config.Config{Secrets: []config.Secret{
-		{
-			Name:   "foo",
-			Source: testSource,
-			Sinks: sink.Sinks{
-				testSink,
+	c1 := &config.Config{
+		Version: 1,
+		Secrets: []config.Secret{
+			{
+				Name:   "foo",
+				Source: testSource,
+				Sinks: sink.Sinks{
+					testSink,
+				},
 			},
 		},
-	}}
+	}
 	spew.Dump(c1)
 	bytes, err := yaml.Marshal(c1)
 	r.Nil(err)
+	r.NotNil(bytes)
 	_, err = tmpFile.Write(bytes)
-	r.Nil(err)
+	r.NoError(err)
 	c2, err := config.FromFile(tmpFile.Name())
-	r.Nil(err)
+	r.NoError(err)
 
 	r.Equal(c1, c2)
 }
