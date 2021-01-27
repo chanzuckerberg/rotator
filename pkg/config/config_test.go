@@ -69,6 +69,18 @@ func TestSingleStringPairs(t *testing.T) {
 	r.Equal(c1, c2)
 }
 
+// A DummySource represents a source that generates random data.
+type ListSource struct {
+	BulletPoints []string
+}
+
+// Define Read function
+
+// Kind returns the kind of this source
+func (listSrc *ListSource) Kind() source.Kind {
+	return source.Kind("listSource")
+}
+
 // Todo: Think about whether the dummy source suffices
 func TestConfigWithLists(t *testing.T) {
 	r := require.New(t)
