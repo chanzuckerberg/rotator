@@ -18,7 +18,7 @@ import (
 //
 // Kind returns the kind of sink.
 type Sink interface {
-	Write(ctx context.Context, name string, val string) error //TODO(aku): Might be worth making val an interface
+	Write(ctx context.Context, name string, val interface{}) error //TODO(aku): Might be worth making val an interface
 	GetKeyToName() map[string]string
 	Kind() Kind
 }

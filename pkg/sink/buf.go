@@ -29,12 +29,14 @@ func (sink *BufSink) Read() string {
 	return sink.buf.String()
 }
 
-func (sink *BufSink) Write(ctx context.Context, name string, val string) error {
-	_, err := fmt.Fprint(sink.buf, val)
-	if err != nil {
+func (sink *BufSink) Write(ctx context.Context, name string, val interface{}) error {
+	switch writeVal := val.(type) {
+	case string:
+		_, err := fmt.Fprint(sink.buf, writeVal)
 		return errors.Wrap(err, "unable to write secret to buffer")
+	default:
+		return errors.Errorf("Buf Sink doesn't support writing type %T", writeVal)
 	}
-	return nil
 }
 
 func (sink *BufSink) Kind() Kind {

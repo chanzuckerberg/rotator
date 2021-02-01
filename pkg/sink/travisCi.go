@@ -33,29 +33,33 @@ func (sink *TravisCiSink) WithTravisClient(client *travis.Client) *TravisCiSink 
 
 // Write updates the value of the env var with the specified name
 // for the given repository slug using the Travis CI client.
-func (sink *TravisCiSink) Write(ctx context.Context, name string, val string) error {
-	// make a map of existing env vars
-	esList, resp, err := sink.Client.EnvVars.ListByRepoSlug(ctx, sink.RepoSlug)
-	if err != nil {
-		return errors.Wrapf(err, "unable to list env vars in Travis CI for repo %s", sink.RepoSlug)
-	}
-	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
-		return errors.New(fmt.Sprintf("unable to list env vars in Travis CI for repo %s: invalid http status: %s", sink.RepoSlug, resp.Status))
-	}
+func (sink *TravisCiSink) Write(ctx context.Context, name string, val interface{}) error {
+	switch writeVal := val.(type) {
+	case string:
+		// make a map of existing env vars
+		esList, resp, err := sink.Client.EnvVars.ListByRepoSlug(ctx, sink.RepoSlug)
+		if err != nil {
+			return errors.Wrapf(err, "unable to list env vars in Travis CI for repo %s", sink.RepoSlug)
+		}
+		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+			return errors.New(fmt.Sprintf("unable to list env vars in Travis CI for repo %s: invalid http status: %s", sink.RepoSlug, resp.Status))
+		}
+		body := &travis.EnvVarBody{Name: name, Value: writeVal}
 
-	body := &travis.EnvVarBody{Name: name, Value: val}
+		es := make(map[string]*travis.EnvVar)
+		for _, e := range esList {
+			es[*e.Name] = e
+		}
 
-	es := make(map[string]*travis.EnvVar)
-	for _, e := range esList {
-		es[*e.Name] = e
+		// find env var by name
+		e, ok := es[name]
+		if !ok {
+			return sink.create(ctx, body)
+		}
+		return sink.update(ctx, body, *e.Id)
+	default:
+		return errors.Errorf("TravisCI Sink doesn't support writing type %T", writeVal)
 	}
-
-	// find env var by name
-	e, ok := es[name]
-	if !ok {
-		return sink.create(ctx, body)
-	}
-	return sink.update(ctx, body, *e.Id)
 }
 
 func (sink *TravisCiSink) create(ctx context.Context, body *travis.EnvVarBody) error {

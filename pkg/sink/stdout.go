@@ -19,7 +19,7 @@ func (sink *StdoutSink) WithKeyToName(m map[string]string) *StdoutSink {
 	return sink
 }
 
-func (sink *StdoutSink) Write(ctx context.Context, name string, val string) error {
+func (sink *StdoutSink) Write(ctx context.Context, name string, val interface{}) error {
 	fmt.Printf("sink:stdout: \n name: %s, val: %#v\n", name, val)
 	return nil
 }

@@ -21,16 +21,21 @@ func NewAwsSecretsManagerSink() *AwsSecretsManagerSink {
 	return &AwsSecretsManagerSink{}
 }
 
-func (sink *AwsSecretsManagerSink) Write(ctx context.Context, name string, val string) error {
-	svc := sink.Client.SecretsManager.Svc
+func (sink *AwsSecretsManagerSink) Write(ctx context.Context, name string, val interface{}) error {
+	switch writeVal := val.(type) {
+	case string:
+		svc := sink.Client.SecretsManager.Svc
 
-	// update secret value
-	in := &secretsmanager.PutSecretValueInput{
-		SecretId:     &name,
-		SecretString: &val,
+		// update secret value
+		in := &secretsmanager.PutSecretValueInput{
+			SecretId:     &name,
+			SecretString: &writeVal,
+		}
+		_, err := svc.PutSecretValueWithContext(ctx, in)
+		return errors.Wrapf(err, "%s: unable to store a new encrypted secret value in aws secrets manager", name)
+	default:
+		return errors.Errorf("AwsSecretsManagerSink doesn't support writing type %T", writeVal)
 	}
-	_, err := svc.PutSecretValueWithContext(ctx, in)
-	return errors.Wrapf(err, "%s: unable to store a new encrypted secret value in aws secrets manager", name)
 }
 
 func (sink *AwsSecretsManagerSink) Kind() Kind {

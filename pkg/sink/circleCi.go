@@ -30,12 +30,17 @@ func (sink *CircleCiSink) WithCircleClient(client *circleci.Client, account stri
 }
 
 // Write writes the value of the env var with the specified name for the given repo
-func (sink *CircleCiSink) Write(ctx context.Context, name string, val string) error {
-	f := func(ctx context.Context) error {
-		_, err := sink.Client.AddEnvVar(sink.Account, sink.Repo, name, val)
-		return errors.Wrapf(err, "could not write %s to %s/%s", name, sink.Account, sink.Repo)
+func (sink *CircleCiSink) Write(ctx context.Context, name string, val interface{}) error {
+	switch writeVal := val.(type) {
+	case string:
+		f := func(ctx context.Context) error {
+			_, err := sink.Client.AddEnvVar(sink.Account, sink.Repo, name, writeVal)
+			return errors.Wrapf(err, "could not write %s to %s/%s", name, sink.Account, sink.Repo)
+		}
+		return retry(ctx, defaultRetryAttempts, defaultRetrySleep, f)
+	default:
+		return errors.Errorf("CircleCi Sink doesn't support writing type %T", writeVal)
 	}
-	return retry(ctx, defaultRetryAttempts, defaultRetrySleep, f)
 }
 
 // Kind returns the kind of this sink

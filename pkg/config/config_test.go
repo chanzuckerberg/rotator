@@ -1,6 +1,8 @@
 package config_test
 
 import (
+	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -87,6 +89,31 @@ func (listSrc *ListSource) Kind() source.Kind {
 	return source.Kind("listSource")
 }
 
+// A DummySource represents a source that generates random data.
+type ListSink struct {
+	Secret []string
+}
+
+func (listSink *ListSink) Write(ctx context.Context, name string, val interface{}) error {
+	// enforce that interface{} is of type []string
+	fmt.Printf("sink:stdout: \n name: %s, val: %#v\n", name, val)
+	return nil
+}
+
+func (listSink *ListSink) GetKeyToName() map[string]string {
+	return map[string]string{
+		"dummyVal": "This won't be used",
+	}
+}
+
+func NewListSink() *ListSink {
+	return &ListSink{}
+}
+
+func (*ListSink) Kind() sink.Kind {
+	return "ListSink"
+}
+
 // Todo: Think about whether the dummy source suffices
 func TestConfigWithLists(t *testing.T) {
 	r := require.New(t)
@@ -94,16 +121,13 @@ func TestConfigWithLists(t *testing.T) {
 	r.Nil(err)
 	defer tmpFile.Close()
 	defer os.Remove(tmpFile.Name())
-	sink1 := sink.NewStdoutSink()
-	sink1.WithKeyToName() // TODO: figure out what map to put here
-	sink2 := sink.NewStdoutSink()
-	sink2.WithKeyToName() // TODO: figure out what map to put here
-	sinkList := sink.Sinks{}
+	sink1 := NewListSink()
+
 	c1 := &config.Config{Secrets: []config.Secret{
 		{
 			Name:   "listTest",
 			Source: &ListSource{},
-			Sinks:  sinkList,
+			Sinks:  []sink.Sink{sink1},
 		},
 	}}
 	// See if rotating works

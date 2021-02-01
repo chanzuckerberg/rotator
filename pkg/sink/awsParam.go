@@ -24,26 +24,32 @@ func NewAwsParamSink() *AwsParamSink {
 
 // Write updates the value of the the parameter with the given name in the
 // underlying AWS Parameter Store.
-func (sink *AwsParamSink) Write(ctx context.Context, name string, val string) error {
-	svc := sink.Client.SSM.Svc
+func (sink *AwsParamSink) Write(ctx context.Context, name string, val interface{}) error {
 
-	// check parameter exists in parameter store
-	out, err := svc.GetParameterWithContext(ctx, &ssm.GetParameterInput{
-		Name: &name,
-	})
-	if err != nil {
-		return errors.Wrapf(err, "%s: unable to get parameter from aws parameter store", name)
-	}
+	switch writeVal := val.(type) {
+	case string:
+		svc := sink.Client.SSM.Svc
 
-	// update parameter value
-	in := &ssm.PutParameterInput{
-		Name:      &name,
-		Value:     &val,
-		Type:      out.Parameter.Type,
-		Overwrite: aws.Bool(true),
+		// check parameter exists in parameter store
+		out, err := svc.GetParameterWithContext(ctx, &ssm.GetParameterInput{
+			Name: &name,
+		})
+		if err != nil {
+			return errors.Wrapf(err, "%s: unable to get parameter from aws parameter store", name)
+		}
+
+		// update parameter value
+		in := &ssm.PutParameterInput{
+			Name:      &name,
+			Value:     &writeVal,
+			Type:      out.Parameter.Type,
+			Overwrite: aws.Bool(true),
+		}
+		_, err = svc.PutParameterWithContext(ctx, in)
+		return errors.Wrapf(err, "%s: unable to edit parameter in aws parameter store", name)
+	default:
+		return errors.Errorf("AWSParam Sink doesn't support writing type %T", writeVal)
 	}
-	_, err = svc.PutParameterWithContext(ctx, in)
-	return errors.Wrapf(err, "%s: unable to edit parameter in aws parameter store", name)
 }
 
 func (sink *AwsParamSink) Kind() Kind {

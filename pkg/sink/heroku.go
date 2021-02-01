@@ -29,25 +29,29 @@ func (sink *HerokuSink) WithHerokuClient(client HerokuServiceIface) *HerokuSink 
 }
 
 // Write writes the value of the env var with the specified name for the given repo
-func (sink *HerokuSink) Write(ctx context.Context, name string, val string) error {
+func (sink *HerokuSink) Write(ctx context.Context, name string, val interface{}) error {
+	switch writeVal := val.(type) {
+	case string:
+		varUpdates := map[string]*string{
+			name: &writeVal,
+		}
+		if sink.Client == nil {
+			return errors.New("Heroku Client not set")
+		}
+		if sink.AppIdentity == "" {
+			return errors.New("Heroku AppIdentity not set")
+		}
 
-	varUpdates := map[string]*string{
-		name: &val,
-	}
-	if sink.Client == nil {
-		return errors.New("Heroku Client not set")
-	}
-	if sink.AppIdentity == "" {
-		return errors.New("Heroku AppIdentity not set")
-	}
+		_, err := sink.Client.ConfigVarUpdate(ctx, sink.AppIdentity, varUpdates)
+		if err != nil {
+			return errors.Wrapf(err, "Unable to update Config var with %s:%s", name, writeVal)
+		}
 
-	_, err := sink.Client.ConfigVarUpdate(ctx, sink.AppIdentity, varUpdates)
-	if err != nil {
-		return errors.Wrapf(err, "Unable to update Config var with %s:%s", name, val)
+		logrus.Debugf("sink:Heroku: \n name: %s, val: %#v\n", name, writeVal)
+		return nil
+	default:
+		return errors.Errorf("Heroku Sink doesn't support writing type %T", writeVal)
 	}
-
-	logrus.Debugf("sink:Heroku: \n name: %s, val: %#v\n", name, val)
-	return nil
 }
 
 // Kind returns the kind of this sink
