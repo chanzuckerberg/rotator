@@ -41,8 +41,8 @@ test-coverage-integration:  ## run the test with proper coverage reporting
 # 		--enable=interfacer --enable=unconvert --enable=gosec --enable=megacheck --deadline=5m
 # .PHONY: lint
 
-lint: ## run the fast go linters on the diff from master
-	./bin/reviewdog -conf .reviewdog.yml  -diff "git diff master"
+lint: ## run the fast go linters on the diff from main
+	./bin/reviewdog -conf .reviewdog.yml  -diff "git diff main"
 .PHONY: lint
 
 lint-ci: ## run the fast go linters
