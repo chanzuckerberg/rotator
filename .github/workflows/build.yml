@@ -5,6 +5,7 @@ on:
       - LICENSE
       - '**.md'
       - charts/rotator/Chart.yaml
+      - '.github/**'
 name: build
 jobs:
   test:
