@@ -9,7 +9,7 @@ on:
 name: build
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
         with:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup buildevents
         uses: kvrhdn/gha-buildevents@v1
         with:
-          apikey: ${{ secrets.BUILDEVENT_APIKEY }}
+          apikey: ${{ secrets.GITHUB_TOKEN }}
           dataset: buildevents
           # Required: the job status, this will be used in the post section and sent
           # as status of the trace. Must always be ${{ job.status }}.
@@ -40,7 +40,7 @@ jobs:
           echo STEP_ID=$(echo script | sum | cut -f 1 -d \ ) >> $GITHUB_ENV
       - name: Run tests
         env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.REVIEWDOG_GITHUB_API_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           buildevents cmd $TRACE_ID $STEP_ID codecov-validate -- curl --data-binary @codecov.yml https://codecov.io/validate
           buildevents cmd $TRACE_ID $STEP_ID make-test -- make test
